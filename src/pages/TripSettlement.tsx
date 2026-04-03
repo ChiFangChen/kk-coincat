@@ -1,0 +1,160 @@
+import { useState } from 'react'
+import { useApp } from '../context/AppContext'
+import type { Trip, User, SplitDetail } from '../types'
+import { calculateBalances, minimizeTransfers } from '../utils/settlement'
+import { ExpenseForm } from '../components/ExpenseForm'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faPen, faArrowRight } from '@fortawesome/free-solid-svg-icons'
+
+interface Props {
+  trip: Trip
+  members: User[]
+}
+
+export function TripSettlement({ trip, members }: Props) {
+  const { getTripExpenses, getUserName, addExpense } = useApp()
+  const [showCustomSettle, setShowCustomSettle] = useState(false)
+  const [customSettleData, setCustomSettleData] = useState<{
+    from: string
+    to: string
+    amount: number
+  } | null>(null)
+
+  const expenses = getTripExpenses(trip.id)
+  const balances = calculateBalances(expenses, trip.members)
+  const transfers = minimizeTransfers(balances)
+
+  const handleSettle = (from: string, to: string, amount: number) => {
+    if (trip.archived) return
+    addExpense({
+      tripId: trip.id,
+      payer: from,
+      amount,
+      item: `結清：${getUserName(from)} → ${getUserName(to)}`,
+      currency: trip.primaryCurrency,
+      splitMethod: 'amount',
+      participants: [to],
+      splitDetails: [{ userId: to, value: amount }] as SplitDetail[],
+      isSettlement: true,
+      createdAt: new Date().toISOString(),
+    })
+  }
+
+  const handleCustomSettle = (from: string, to: string, amount: number) => {
+    setCustomSettleData({ from, to, amount })
+    setShowCustomSettle(true)
+  }
+
+  const allSettled = Object.values(balances).every((b) => Math.abs(b) < 0.01)
+
+  return (
+    <div className="page">
+      <div className="page-header">
+        <h1>結算</h1>
+      </div>
+
+      {/* Balance overview */}
+      <div className="card" style={{ marginBottom: '1rem' }}>
+        <h2 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>餘額總覽</h2>
+        <div className="balance-list">
+          {trip.members.map((id) => {
+            const balance = balances[id] || 0
+            return (
+              <div key={id} className="balance-item">
+                <div className="balance-name">{getUserName(id)}</div>
+                <div className={`balance-amount ${balance > 0.01 ? 'positive' : balance < -0.01 ? 'negative' : ''}`}>
+                  {balance > 0.01
+                    ? `+${balance.toFixed(0)}`
+                    : balance < -0.01
+                      ? `${balance.toFixed(0)}`
+                      : '0'}
+                  <span className="balance-currency">{trip.primaryCurrency}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Transfer suggestions */}
+      <div className="card">
+        <h2 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>
+          轉帳建議
+          {allSettled && expenses.length > 0 && (
+            <span className="trip-settled-badge" style={{ marginLeft: '0.5rem' }}>已全部結清</span>
+          )}
+        </h2>
+
+        {expenses.length === 0 ? (
+          <div className="empty-state" style={{ padding: '1.5rem 0' }}>
+            <p>還沒有帳務</p>
+          </div>
+        ) : allSettled ? (
+          <div className="empty-state" style={{ padding: '1.5rem 0' }}>
+            <FontAwesomeIcon icon={faCheck} style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#16a34a' }} />
+            <p>所有帳務已結清！</p>
+          </div>
+        ) : (
+          <div className="transfer-list">
+            {transfers.map((t, i) => (
+              <div key={i} className="transfer-item">
+                <div className="transfer-info">
+                  <span className="transfer-name">{getUserName(t.from)}</span>
+                  <FontAwesomeIcon icon={faArrowRight} className="transfer-arrow" />
+                  <span className="transfer-name">{getUserName(t.to)}</span>
+                  <span className="transfer-amount">
+                    {t.amount.toLocaleString()} {trip.primaryCurrency}
+                  </span>
+                </div>
+                {!trip.archived && (
+                  <div className="transfer-actions">
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => handleSettle(t.from, t.to, t.amount)}
+                    >
+                      <FontAwesomeIcon icon={faCheck} /> 已結清
+                    </button>
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => handleCustomSettle(t.from, t.to, t.amount)}
+                    >
+                      <FontAwesomeIcon icon={faPen} /> 自訂
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {showCustomSettle && customSettleData && (
+        <ExpenseForm
+          trip={trip}
+          members={members}
+          defaultPayer={customSettleData.from}
+          editingExpense={{
+            id: '',
+            tripId: trip.id,
+            payer: customSettleData.from,
+            amount: customSettleData.amount,
+            item: `結清：${getUserName(customSettleData.from)} → ${getUserName(customSettleData.to)}`,
+            currency: trip.primaryCurrency,
+            exchangeRate: 1,
+            convertedAmount: customSettleData.amount,
+            splitMethod: 'amount',
+            participants: [customSettleData.to],
+            splitDetails: [{ userId: customSettleData.to, value: customSettleData.amount }],
+            isSettlement: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }}
+          onClose={() => {
+            setShowCustomSettle(false)
+            setCustomSettleData(null)
+          }}
+        />
+      )}
+    </div>
+  )
+}

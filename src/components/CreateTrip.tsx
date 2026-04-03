@@ -1,0 +1,81 @@
+import { useState } from 'react'
+import { useApp } from '../context/AppContext'
+
+interface Props {
+  onClose: () => void
+}
+
+export function CreateTrip({ onClose }: Props) {
+  const { state, addTrip } = useApp()
+  const [name, setName] = useState('')
+  const [currency, setCurrency] = useState('TWD')
+  const [selectedMembers, setSelectedMembers] = useState<string[]>(
+    state.auth.currentUser ? [state.auth.currentUser.id] : []
+  )
+
+  const currencies = ['TWD', 'JPY', 'THB', 'USD', 'CNY', 'KRW', 'EUR', 'GBP']
+
+  const toggleMember = (userId: string) => {
+    setSelectedMembers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    )
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim() || selectedMembers.length === 0) return
+    addTrip(name.trim(), currency, selectedMembers)
+    onClose()
+  }
+
+  return (
+    <div className="dialog-overlay" onClick={onClose}>
+      <div className="dialog" onClick={(e) => e.stopPropagation()}>
+        <h3>新增旅程</h3>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div className="form-group">
+            <label>旅程名稱</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="例如：東京自由行"
+              required
+              autoFocus
+            />
+          </div>
+          <div className="form-group">
+            <label>主幣別</label>
+            <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+              {currencies.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>成員</label>
+            <div className="member-select">
+              {state.users.map((user) => (
+                <label key={user.id} className="member-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedMembers.includes(user.id)}
+                    onChange={() => toggleMember(user.id)}
+                  />
+                  <span>{user.displayName}</span>
+                  {user.id === state.auth.currentUser?.id && <span className="you-tag">你</span>}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="dialog-actions">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>取消</button>
+            <button type="submit" className="btn btn-primary">建立</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
