@@ -312,6 +312,15 @@ body {
 .btn-warning:hover {
   opacity: 0.9;
 }
+.select-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-muted);
+  color: var(--color-foreground);
+  cursor: pointer;
+}
 .btn-sm {
   padding: 0.375rem 0.75rem;
   font-size: 0.75rem;
