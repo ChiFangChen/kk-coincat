@@ -32,9 +32,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const TRACKED_KEY = `kk-coincat-tracked-currencies-${trip.id}`
   const [trackedList, setTrackedList] = useState<string[]>(() => {
     const saved = localStorage.getItem(TRACKED_KEY)
-    if (saved) return JSON.parse(saved)
-    // Migrate: use existing exchangeRates keys as initial tracked list
-    return Object.keys(state.exchangeRates).filter((c) => c !== trip.primaryCurrency)
+    return saved ? JSON.parse(saved) : []
   })
 
   const saveTrackedList = (list: string[]) => {
