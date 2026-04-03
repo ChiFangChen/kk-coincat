@@ -182,6 +182,7 @@ export function UserMenu({ onClose, onSwitchUser }: Props) {
               style={{ width: '100%' }}
               onClick={() => {
                 localStorage.removeItem(ADMIN_SESSION_KEY)
+                localStorage.removeItem('kk-coincat-route-trip')
                 logout()
                 onSwitchUser?.()
               }}

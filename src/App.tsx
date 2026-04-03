@@ -73,6 +73,7 @@ function AppContent() {
       </div>
 
       {showSwitchUser && <UserMenu onClose={() => setShowSwitchUser(false)} onSwitchUser={() => {
+        setShowSwitchUser(false)
         setSelectedTripId(null)
         localStorage.removeItem('kk-coincat-route-trip')
       }} />}
