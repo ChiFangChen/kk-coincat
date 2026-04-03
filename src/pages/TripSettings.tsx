@@ -16,7 +16,6 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const { state, updateTrip, deleteTrip, updateExchangeRates, isCurrentUserAdmin } = useApp()
   const admin = isCurrentUserAdmin()
   const [name, setName] = useState(trip.name)
-  const [currency, setCurrency] = useState(trip.primaryCurrency)
   const [showAddMember, setShowAddMember] = useState(false)
   const [confirmArchive, setConfirmArchive] = useState(false)
   const [confirmRemoveMember, setConfirmRemoveMember] = useState<string | null>(null)
@@ -49,13 +48,6 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const handleSaveName = () => {
     if (name.trim() && name !== trip.name) {
       updateTrip({ ...trip, name: name.trim() })
-    }
-  }
-
-  const handleSaveCurrency = (newCurrency: string) => {
-    setCurrency(newCurrency)
-    if (newCurrency !== trip.primaryCurrency) {
-      updateTrip({ ...trip, primaryCurrency: newCurrency })
     }
   }
 
@@ -162,14 +154,6 @@ export function TripSettings({ trip, members, onBack }: Props) {
         ) : (
           <div className="settings-value">{trip.name}</div>
         )}
-      </div>
-
-      {/* Currency */}
-      <div className="settings-section">
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <h2 style={{ margin: 0 }}>主幣別</h2>
-          <span className="settings-value" style={{ marginLeft: 'auto' }}>TWD</span>
-        </div>
       </div>
 
       {/* Exchange rates */}
