@@ -183,6 +183,9 @@ body {
   background-color: var(--color-background);
   color: var(--color-foreground);
 }
+.identity-page .form-group input {
+  background-color: var(--color-card);
+}
 .login-logo {
   font-size: 4rem;
   margin-bottom: 0.25rem;
