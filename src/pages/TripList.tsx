@@ -89,8 +89,6 @@ export function TripList({ onSelectTrip }: Props) {
                 <div className="trip-card-meta">
                   <span>{trip.members.length} 人</span>
                   <span>·</span>
-                  <span>{trip.primaryCurrency}</span>
-                  <span>·</span>
                   <span>{expenses.length} 筆</span>
                 </div>
                 <div className="trip-card-members">
@@ -103,7 +101,7 @@ export function TripList({ onSelectTrip }: Props) {
                 </div>
                 {expenses.length > 0 && !settled && (
                   <div className={`trip-card-balance ${balance >= 0 ? 'positive' : 'negative'}`}>
-                    {balance >= 0 ? `別人欠你 ${balance.toFixed(0)}` : `你欠別人 ${Math.abs(balance).toFixed(0)}`} {trip.primaryCurrency}
+                    {balance >= 0 ? `別人欠你 ${balance.toFixed(0)}` : `你欠別人 ${Math.abs(balance).toFixed(0)}`}
                   </div>
                 )}
               </div>
