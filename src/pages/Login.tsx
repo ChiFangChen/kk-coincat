@@ -38,7 +38,7 @@ export function Login({ onSwitchToRegister }: Props) {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="輸入帳號"
+
             autoComplete="off"
             required
           />
@@ -49,7 +49,7 @@ export function Login({ onSwitchToRegister }: Props) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="輸入密碼"
+
             autoComplete="off"
             required
           />

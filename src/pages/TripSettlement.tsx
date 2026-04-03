@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext'
 import type { Trip, User, SplitDetail } from '../types'
 import { calculateBalances, minimizeTransfers } from '../utils/settlement'
 import { ExpenseForm } from '../components/ExpenseForm'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faPen, faArrowRight } from '@fortawesome/free-solid-svg-icons'
 
@@ -12,9 +13,14 @@ interface Props {
 }
 
 export function TripSettlement({ trip, members }: Props) {
-  const { getTripExpenses, getUserName, addExpense } = useApp()
+  const { getTripExpenses, getUserName, getUserColor, addExpense } = useApp()
   const [showCustomSettle, setShowCustomSettle] = useState(false)
   const [customSettleData, setCustomSettleData] = useState<{
+    from: string
+    to: string
+    amount: number
+  } | null>(null)
+  const [confirmSettle, setConfirmSettle] = useState<{
     from: string
     to: string
     amount: number
@@ -61,7 +67,7 @@ export function TripSettlement({ trip, members }: Props) {
             const balance = balances[id] || 0
             return (
               <div key={id} className="balance-item">
-                <div className="balance-name">{getUserName(id)}</div>
+                <div className="balance-name">{getUserName(id)}<span className="color-dot" style={{ backgroundColor: getUserColor(id) }} /></div>
                 <div className={`balance-amount ${balance > 0.01 ? 'positive' : balance < -0.01 ? 'negative' : ''}`}>
                   {balance > 0.01
                     ? `+${balance.toFixed(0)}`
@@ -99,9 +105,9 @@ export function TripSettlement({ trip, members }: Props) {
             {transfers.map((t, i) => (
               <div key={i} className="transfer-item">
                 <div className="transfer-info">
-                  <span className="transfer-name">{getUserName(t.from)}</span>
+                  <span className="transfer-name">{getUserName(t.from)}<span className="color-dot" style={{ backgroundColor: getUserColor(t.from) }} /></span>
                   <FontAwesomeIcon icon={faArrowRight} className="transfer-arrow" />
-                  <span className="transfer-name">{getUserName(t.to)}</span>
+                  <span className="transfer-name">{getUserName(t.to)}<span className="color-dot" style={{ backgroundColor: getUserColor(t.to) }} /></span>
                   <span className="transfer-amount">
                     {t.amount.toLocaleString()} {trip.primaryCurrency}
                   </span>
@@ -110,7 +116,7 @@ export function TripSettlement({ trip, members }: Props) {
                   <div className="transfer-actions">
                     <button
                       className="btn btn-sm btn-primary"
-                      onClick={() => handleSettle(t.from, t.to, t.amount)}
+                      onClick={() => setConfirmSettle({ from: t.from, to: t.to, amount: t.amount })}
                     >
                       <FontAwesomeIcon icon={faCheck} /> 已結清
                     </button>
@@ -153,6 +159,19 @@ export function TripSettlement({ trip, members }: Props) {
             setShowCustomSettle(false)
             setCustomSettleData(null)
           }}
+        />
+      )}
+
+      {confirmSettle && (
+        <ConfirmDialog
+          title="確認結清"
+          message={`${getUserName(confirmSettle.from)} 付 ${confirmSettle.amount.toLocaleString()} ${trip.primaryCurrency} 給 ${getUserName(confirmSettle.to)}？`}
+          confirmText="結清"
+          onConfirm={() => {
+            handleSettle(confirmSettle.from, confirmSettle.to, confirmSettle.amount)
+            setConfirmSettle(null)
+          }}
+          onCancel={() => setConfirmSettle(null)}
         />
       )}
     </div>

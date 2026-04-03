@@ -4,9 +4,9 @@ import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { TripList } from './pages/TripList'
 import { TripDetail } from './pages/TripDetail'
-import { SwitchUser } from './pages/SwitchUser'
+import { UserMenu } from './components/UserMenu'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExchangeAlt, faSun, faMoon } from '@fortawesome/free-solid-svg-icons'
+import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons'
 import './App.css'
 
 function AppContent() {
@@ -28,7 +28,7 @@ function AppContent() {
   // Inside a trip
   if (selectedTripId) {
     return (
-      <div className={`theme-${state.settings.theme}`}>
+      <div className={`theme-${state.settings.theme}`} style={{ height: '100%' }}>
         <TripDetail
           tripId={selectedTripId}
           onBack={() => {
@@ -56,8 +56,11 @@ function AppContent() {
           >
             <FontAwesomeIcon icon={state.settings.theme === 'dark' ? faSun : faMoon} />
           </button>
-          <button className="identity-badge" onClick={() => setShowSwitchUser(true)}>
-            <FontAwesomeIcon icon={faExchangeAlt} style={{ marginRight: '0.25rem' }} />
+          <button
+            className="identity-badge"
+            onClick={() => setShowSwitchUser(true)}
+            style={state.auth.currentUser.color ? { backgroundColor: state.auth.currentUser.color, color: 'white' } : undefined}
+          >
             {state.auth.currentUser.displayName}
           </button>
         </div>
@@ -69,7 +72,7 @@ function AppContent() {
         }} />
       </div>
 
-      {showSwitchUser && <SwitchUser onCancel={() => setShowSwitchUser(false)} />}
+      {showSwitchUser && <UserMenu onClose={() => setShowSwitchUser(false)} />}
     </div>
   )
 }

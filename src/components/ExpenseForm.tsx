@@ -112,9 +112,12 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
 
   return (
     <div className="dialog-overlay" onClick={onClose}>
-      <div className="dialog" onClick={(e) => e.stopPropagation()}>
-        <h3>{editingExpense ? '編輯帳務' : '新增帳務'}</h3>
+      <div className="dialog dialog-fullscreen" onClick={(e) => e.stopPropagation()}>
+        <div className="dialog-header">
+          <h3>{editingExpense ? '編輯帳務' : '新增帳務'}</h3>
+        </div>
         <form onSubmit={handleSubmit} className="expense-form">
+          <div className="expense-form-body">
           <div className="form-group">
             <label>付款人</label>
             <div className="payer-select">
@@ -125,7 +128,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
                   className={`btn btn-sm ${payer === m.id ? 'btn-primary' : 'btn-secondary'}`}
                   onClick={() => setPayer(m.id)}
                 >
-                  {m.displayName}
+                  {m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} />
                 </button>
               ))}
             </div>
@@ -137,7 +140,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
               type="text"
               value={item}
               onChange={(e) => setItem(e.target.value)}
-              placeholder="例如：午餐"
+
               required
               autoFocus
             />
@@ -150,7 +153,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="0"
+
                 step="any"
                 min="0"
                 required
@@ -198,7 +201,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
                     checked={participants.includes(m.id)}
                     onChange={() => toggleParticipant(m.id)}
                   />
-                  <span>{m.displayName}</span>
+                  <span>{m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} /></span>
                 </label>
               ))}
             </div>
@@ -214,7 +217,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
                     const member = members.find((m) => m.id === detail.userId)
                     return (
                       <div key={detail.userId} className="split-detail-row">
-                        <span className="split-detail-name">{member?.displayName}</span>
+                        <span className="split-detail-name">{member?.displayName}<span className="color-dot" style={{ backgroundColor: member?.color }} /></span>
                         <input
                           type="number"
                           value={detail.value}
@@ -241,6 +244,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
             />
           </div>
 
+          </div>
           <div className="dialog-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>取消</button>
             <button type="submit" className="btn btn-primary">

@@ -41,7 +41,7 @@ export function CreateTrip({ onClose }: Props) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="例如：東京自由行"
+
               required
               autoFocus
             />
@@ -64,7 +64,7 @@ export function CreateTrip({ onClose }: Props) {
                     checked={selectedMembers.includes(user.id)}
                     onChange={() => toggleMember(user.id)}
                   />
-                  <span>{user.displayName}</span>
+                  <span>{user.displayName}<span className="color-dot" style={{ backgroundColor: user.color }} /></span>
                   {user.id === state.auth.currentUser?.id && <span className="you-tag">你</span>}
                 </label>
               ))}

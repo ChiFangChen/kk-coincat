@@ -56,7 +56,7 @@ export function SwitchUser({ onCancel }: Props) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="輸入密碼"
+
               required
             />
           </div>

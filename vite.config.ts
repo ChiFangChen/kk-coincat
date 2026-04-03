@@ -13,7 +13,7 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'KK CoinCat',
-        short_name: 'CoinCat',
+        short_name: 'KK CoinCat',
         description: 'KK CoinCat 旅行分帳',
         theme_color: '#f1f5f9',
         background_color: '#ffffff',

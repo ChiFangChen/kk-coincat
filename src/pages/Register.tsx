@@ -38,7 +38,7 @@ export function Register({ onSwitchToLogin }: Props) {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="輸入帳號"
+
             autoComplete="off"
             required
           />
@@ -49,7 +49,7 @@ export function Register({ onSwitchToLogin }: Props) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="輸入密碼"
+
             autoComplete="off"
             required
           />
@@ -60,7 +60,7 @@ export function Register({ onSwitchToLogin }: Props) {
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="例如：Kiki"
+
           />
         </div>
         {error && <div className="auth-error">{error}</div>}

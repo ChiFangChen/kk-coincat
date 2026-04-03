@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { NavBar } from '../components/NavBar'
+import { UserMenu } from '../components/UserMenu'
 import { TripExpenses } from './TripExpenses'
 import { TripSettlement } from './TripSettlement'
 import { TripSettings } from './TripSettings'
@@ -15,7 +16,7 @@ interface Props {
 export function TripDetail({ tripId, onBack }: Props) {
   const { state, getTripMembers } = useApp()
   const [activeTab, setActiveTab] = useState<'expenses' | 'settlement' | 'settings'>('expenses')
-
+  const [showUserMenu, setShowUserMenu] = useState(false)
   const trip = state.trips.find((t) => t.id === tripId)
   if (!trip) {
     return (
@@ -40,6 +41,15 @@ export function TripDetail({ tripId, onBack }: Props) {
             <FontAwesomeIcon icon={faArchive} /> 已歸檔
           </span>
         )}
+        {state.auth.currentUser && (
+          <button
+            className="identity-badge"
+            onClick={() => setShowUserMenu(true)}
+            style={state.auth.currentUser.color ? { backgroundColor: state.auth.currentUser.color, color: 'white' } : undefined}
+          >
+            {state.auth.currentUser.displayName}
+          </button>
+        )}
       </div>
 
       <div className="app-content">
@@ -49,6 +59,7 @@ export function TripDetail({ tripId, onBack }: Props) {
       </div>
 
       <NavBar activeTab={activeTab} onTabChange={setActiveTab} />
+      {showUserMenu && <UserMenu onClose={() => setShowUserMenu(false)} />}
     </div>
   )
 }

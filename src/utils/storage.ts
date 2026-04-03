@@ -1,4 +1,5 @@
 import type { AppState, LocalSettings, User } from '../types'
+import { USER_COLORS } from '../types'
 
 const STORAGE_KEY = 'kk-coincat-data'
 const AUTH_KEY = 'kk-coincat-auth'
@@ -28,9 +29,21 @@ export function loadState(): AppState {
     const parsedAuth = auth ? JSON.parse(auth) as { currentUser: User | null } : { currentUser: null }
     const parsedSettings = settings ? JSON.parse(settings) as Partial<LocalSettings> : {}
 
+    // Migrate users without color
+    const users = (parsed.users || []).map((u: User, i: number) => {
+      if (!u.color) return { ...u, color: USER_COLORS[i % USER_COLORS.length] }
+      return u
+    })
+    const authUser = parsedAuth.currentUser
+    if (authUser && !authUser.color) {
+      const match = users.find((u: User) => u.id === authUser.id)
+      if (match) parsedAuth.currentUser = match
+    }
+
     return {
       ...defaultState,
       ...parsed,
+      users,
       auth: parsedAuth,
       settings: { ...defaultSettings, ...parsedSettings },
     }

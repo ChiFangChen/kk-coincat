@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useReducer, useCallback, useRef } from 'react'
 import type { AppState, User, Trip, TripExpense, LocalSettings } from '../types'
+import { USER_COLORS } from '../types'
 import { loadState, saveState, saveAuth } from '../utils/storage'
 import { generateId } from '../utils/id'
 import { convertToDefault } from '../utils/currency'
@@ -21,6 +22,7 @@ import type { Firestore } from 'firebase/firestore'
 type Action =
   | { type: 'SET_USERS'; users: User[] }
   | { type: 'ADD_USER'; user: User }
+  | { type: 'UPDATE_USER'; user: User }
   | { type: 'SET_TRIPS'; trips: Trip[] }
   | { type: 'ADD_TRIP'; trip: Trip }
   | { type: 'UPDATE_TRIP'; trip: Trip }
@@ -35,10 +37,22 @@ type Action =
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case 'SET_USERS':
-      return { ...state, users: action.users }
+    case 'SET_USERS': {
+      const users = action.users.map((u, i) =>
+        u.color ? u : { ...u, color: USER_COLORS[i % USER_COLORS.length] }
+      )
+      return { ...state, users }
+    }
     case 'ADD_USER':
       return { ...state, users: [...state.users, action.user] }
+    case 'UPDATE_USER':
+      return {
+        ...state,
+        users: state.users.map((u) => (u.id === action.user.id ? action.user : u)),
+        auth: state.auth.currentUser?.id === action.user.id
+          ? { currentUser: action.user }
+          : state.auth,
+      }
     case 'SET_TRIPS':
       return { ...state, trips: action.trips }
     case 'ADD_TRIP':
@@ -82,6 +96,7 @@ interface AppContextValue {
   login: (user: User) => void
   logout: () => void
   register: (username: string, password: string, displayName: string) => Promise<User>
+  updateUser: (user: User) => void
   addTrip: (name: string, primaryCurrency: string, memberIds: string[]) => void
   updateTrip: (trip: Trip) => void
   addExpense: (data: Omit<TripExpense, 'id' | 'updatedAt' | 'convertedAmount' | 'exchangeRate'> & { currency: string }) => void
@@ -90,6 +105,7 @@ interface AppContextValue {
   updateExchangeRates: (rates: Record<string, number>) => void
   updateSettings: (settings: Partial<LocalSettings>) => void
   getUserName: (userId: string) => string
+  getUserColor: (userId: string) => string
   getTripExpenses: (tripId: string) => TripExpense[]
   getTripMembers: (trip: Trip) => User[]
   isCurrentUserAdmin: () => boolean
@@ -141,11 +157,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const register = useCallback(async (username: string, password: string, displayName: string): Promise<User> => {
     const isFirstUser = state.users.length === 0
+    const usedColors = state.users.map((u) => u.color)
+    const available = USER_COLORS.filter((c) => !usedColors.includes(c))
+    const colorPool = available.length > 0 ? available : USER_COLORS
+    const color = colorPool[Math.floor(Math.random() * colorPool.length)]
     const user: User = {
       id: generateId(),
       username,
       password,
       displayName,
+      color,
       isAdmin: isFirstUser,
       createdAt: new Date().toISOString(),
     }
@@ -153,6 +174,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (dbRef.current) await syncUser(dbRef.current, user)
     return user
   }, [])
+
+  const updateUser = useCallback((user: User) => {
+    dispatch({ type: 'UPDATE_USER', user })
+    if (user.id === state.auth.currentUser?.id) saveAuth(user)
+    if (dbRef.current) syncUser(dbRef.current, user)
+  }, [state.auth.currentUser])
 
   const addTrip = useCallback((name: string, primaryCurrency: string, memberIds: string[]) => {
     if (!state.auth.currentUser) return
@@ -237,6 +264,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return user?.displayName || '未知'
   }, [state.users])
 
+  const getUserColor = useCallback((userId: string): string => {
+    const user = state.users.find((u) => u.id === userId)
+    return user?.color || '#888'
+  }, [state.users])
+
   const getTripExpenses = useCallback((tripId: string): TripExpense[] => {
     return state.expenses.filter((e) => e.tripId === tripId)
   }, [state.expenses])
@@ -263,6 +295,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         register,
+        updateUser,
         addTrip,
         updateTrip: updateTripAction,
         addExpense,
@@ -271,6 +304,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateExchangeRates,
         updateSettings,
         getUserName,
+        getUserColor,
         getTripExpenses,
         getTripMembers,
         isCurrentUserAdmin,

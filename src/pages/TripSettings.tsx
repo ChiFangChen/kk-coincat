@@ -84,15 +84,18 @@ export function TripSettings({ trip, members, onBack }: Props) {
       {/* Trip name */}
       <div className="settings-section">
         <h2>旅程名稱</h2>
-        <div className="form-group">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={handleSaveName}
-            disabled={!admin || trip.archived}
-          />
-        </div>
+        {admin && !trip.archived ? (
+          <div className="form-group">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={handleSaveName}
+            />
+          </div>
+        ) : (
+          <div className="settings-value">{trip.name}</div>
+        )}
       </div>
 
       {/* Currency */}
@@ -141,9 +144,8 @@ export function TripSettings({ trip, members, onBack }: Props) {
         <div className="member-list-settings">
           {members.map((m) => (
             <div key={m.id} className="member-row">
-              <div className="payer-badge">{m.displayName.charAt(0).toUpperCase()}</div>
-              <span className="member-row-name">{m.displayName}</span>
-              {m.id === trip.creator && <span className="you-tag">建立者</span>}
+              <div className="payer-badge" style={m.color ? { backgroundColor: m.color } : undefined}>{m.displayName.charAt(0).toUpperCase()}</div>
+              <span className="member-row-name">{m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} /></span>
               {admin && !trip.archived && trip.members.length > 1 && (
                 <button
                   className="btn-icon btn-delete"
@@ -194,7 +196,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
                   style={{ width: '100%', marginBottom: '0.5rem' }}
                   onClick={() => handleAddMember(u.id)}
                 >
-                  {u.displayName}
+                  {u.displayName}<span className="color-dot" style={{ backgroundColor: u.color }} />
                 </button>
               ))}
             </div>

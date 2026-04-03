@@ -91,7 +91,7 @@ export function TripExpenses({ trip, members }: Props) {
               className="quick-add-member-btn"
               onClick={() => handleQuickAdd(m.id)}
             >
-              <span className="quick-add-member-avatar">
+              <span className="quick-add-member-avatar" style={m.color ? { backgroundColor: m.color } : undefined}>
                 {m.displayName.charAt(0).toUpperCase()}
               </span>
               <span className="quick-add-member-name">{m.displayName}</span>
@@ -106,7 +106,7 @@ export function TripExpenses({ trip, members }: Props) {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="搜尋項目..."
+
         />
       </div>
 
@@ -124,6 +124,7 @@ export function TripExpenses({ trip, members }: Props) {
             onClick={() => setFilterPayer(filterPayer === m.id ? null : m.id)}
           >
             {m.displayName}
+            <span className="color-dot" style={{ backgroundColor: m.color }} />
           </button>
         ))}
       </div>
@@ -142,7 +143,7 @@ export function TripExpenses({ trip, members }: Props) {
               onClick={() => handleEdit(expense)}
             >
               <div className="expense-left">
-                <div className="payer-badge">
+                <div className="payer-badge" style={members.find((m) => m.id === expense.payer)?.color ? { backgroundColor: members.find((m) => m.id === expense.payer)!.color } : undefined}>
                   {getUserName(expense.payer).charAt(0).toUpperCase()}
                 </div>
                 <div className="expense-info">

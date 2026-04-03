@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function TripList({ onSelectTrip }: Props) {
-  const { state, getUserName, getTripExpenses, isCurrentUserAdmin } = useApp()
+  const { state, getUserName, getUserColor, getTripExpenses, isCurrentUserAdmin } = useApp()
   const [showCreate, setShowCreate] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
 
@@ -96,6 +96,7 @@ export function TripList({ onSelectTrip }: Props) {
                   {trip.members.map((id) => (
                     <span key={id} className="trip-member-tag">
                       {getUserName(id)}
+                      <span className="color-dot" style={{ backgroundColor: getUserColor(id) }} />
                     </span>
                   ))}
                 </div>
