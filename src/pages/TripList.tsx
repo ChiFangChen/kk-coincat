@@ -43,7 +43,7 @@ export function TripList({ onSelectTrip }: Props) {
         <h1>我的旅程</h1>
         {isCurrentUserAdmin() && (
           <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>
-            <FontAwesomeIcon icon={faPlus} /> 新增
+            <FontAwesomeIcon icon={faPlus} />
           </button>
         )}
       </div>

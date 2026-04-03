@@ -8,12 +8,11 @@ interface Props {
 export function CreateTrip({ onClose }: Props) {
   const { state, addTrip } = useApp()
   const [name, setName] = useState('')
-  const [currency, setCurrency] = useState('TWD')
   const [selectedMembers, setSelectedMembers] = useState<string[]>(
     state.auth.currentUser ? [state.auth.currentUser.id] : []
   )
 
-  const currencies = ['TWD', ...Object.keys(state.exchangeRates).filter((c) => c !== 'TWD').sort()]
+  const activeUsers = state.users.filter((u) => !u.deleted)
 
   const toggleMember = (userId: string) => {
     setSelectedMembers((prev) =>
@@ -26,7 +25,7 @@ export function CreateTrip({ onClose }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim() || selectedMembers.length === 0) return
-    addTrip(name.trim(), currency, selectedMembers)
+    addTrip(name.trim(), 'TWD', selectedMembers)
     onClose()
   }
 
@@ -47,17 +46,9 @@ export function CreateTrip({ onClose }: Props) {
             />
           </div>
           <div className="form-group">
-            <label>主幣別</label>
-            <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-              {currencies.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
             <label>成員</label>
             <div className="member-select">
-              {state.users.map((user) => (
+              {activeUsers.map((user) => (
                 <label key={user.id} className="member-checkbox">
                   <input
                     type="checkbox"
