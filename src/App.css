@@ -52,7 +52,9 @@ body {
 .svg-inline--fa {
   margin-right: 0.25em;
 }
-.svg-inline--fa:last-child {
+.svg-inline--fa:last-child,
+.btn-icon .svg-inline--fa,
+.color-picker-btn .svg-inline--fa {
   margin-right: 0;
 }
 
