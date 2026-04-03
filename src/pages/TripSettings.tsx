@@ -268,6 +268,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
             <div key={m.id} className="member-row">
               <div className="payer-badge" style={m.color ? { backgroundColor: m.color } : undefined}>{m.displayName.charAt(0).toUpperCase()}</div>
               <span className="member-row-name">{m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} /></span>
+              {m.id === state.auth.currentUser?.id && <span className="you-tag">你</span>}
               {admin && !trip.archived && trip.members.length > 1 && (
                 <button
                   className="btn-icon btn-delete"
