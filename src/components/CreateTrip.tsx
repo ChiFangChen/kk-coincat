@@ -13,7 +13,7 @@ export function CreateTrip({ onClose }: Props) {
     state.auth.currentUser ? [state.auth.currentUser.id] : []
   )
 
-  const currencies = ['TWD', 'JPY', 'THB', 'USD', 'CNY', 'KRW', 'EUR', 'GBP']
+  const currencies = ['TWD', ...Object.keys(state.exchangeRates).filter((c) => c !== 'TWD').sort()]
 
   const toggleMember = (userId: string) => {
     setSelectedMembers((prev) =>

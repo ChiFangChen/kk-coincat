@@ -23,7 +23,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
   )
   const [item, setItem] = useState(editingExpense?.item || '')
   const [amount, setAmount] = useState(editingExpense ? String(editingExpense.amount) : '')
-  const [currency, setCurrency] = useState(editingExpense?.currency || trip.primaryCurrency)
+  const [currency, setCurrency] = useState(editingExpense?.currency || savedPrefs?.currency || trip.primaryCurrency)
   const [splitMethod, setSplitMethod] = useState<SplitMethod>(
     editingExpense?.splitMethod || (savedPrefs?.splitMethod as SplitMethod) || 'equal'
   )
@@ -43,8 +43,8 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
   const trackedKey = `kk-coincat-tracked-currencies-${trip.id}`
   const trackedList: string[] = JSON.parse(localStorage.getItem(trackedKey) || '[]')
   const currencies = [
-    trip.primaryCurrency,
-    ...trackedList.filter((c) => c !== trip.primaryCurrency),
+    'TWD',
+    ...trackedList.filter((c) => c !== 'TWD'),
   ]
 
   // Update splitDetails when participants change
