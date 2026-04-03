@@ -39,10 +39,12 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
   })
   const [isSettlement] = useState(editingExpense?.isSettlement || false)
 
-  // Available currencies from exchange rates + trip primary currency
+  // Available currencies: primary + tracked
+  const trackedKey = `kk-coincat-tracked-currencies-${trip.id}`
+  const trackedList: string[] = JSON.parse(localStorage.getItem(trackedKey) || '[]')
   const currencies = [
     trip.primaryCurrency,
-    ...Object.keys(state.exchangeRates).filter((c) => c !== trip.primaryCurrency),
+    ...trackedList.filter((c) => c !== trip.primaryCurrency),
   ]
 
   // Update splitDetails when participants change

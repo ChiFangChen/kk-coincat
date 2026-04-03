@@ -43,7 +43,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
     localStorage.setItem(TRACKED_KEY, JSON.stringify(list))
   }
 
-  const currencies = ['TWD', 'JPY', 'THB', 'USD', 'CNY', 'KRW', 'EUR', 'GBP']
+  const currencies = [trip.primaryCurrency, ...trackedList.filter((c) => c !== trip.primaryCurrency)]
   const nonMembers = state.users.filter((u) => !trip.members.includes(u.id) && !u.deleted)
 
   const handleSaveName = () => {
@@ -136,9 +136,10 @@ export function TripSettings({ trip, members, onBack }: Props) {
     setShowAddCurrency(false)
   }
 
+  const COMMON_CURRENCIES = ['TWD', 'JPY', 'THB', 'USD', 'CNY', 'KRW', 'EUR', 'GBP']
   const availableToAdd = Object.keys(allRates).length > 0
     ? Object.keys(allRates).filter((code) => code !== trip.primaryCurrency && !trackedList.includes(code)).sort()
-    : currencies.filter((c) => c !== trip.primaryCurrency && !trackedList.includes(c))
+    : COMMON_CURRENCIES.filter((c) => c !== trip.primaryCurrency && !trackedList.includes(c))
 
   return (
     <div className="page">
