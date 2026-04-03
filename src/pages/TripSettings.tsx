@@ -19,6 +19,8 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const [currency, setCurrency] = useState(trip.primaryCurrency)
   const [showAddMember, setShowAddMember] = useState(false)
   const [confirmArchive, setConfirmArchive] = useState(false)
+  const [confirmRemoveMember, setConfirmRemoveMember] = useState<string | null>(null)
+  const [confirmRemoveCurrency, setConfirmRemoveCurrency] = useState<string | null>(null)
   const [fetchingRates, setFetchingRates] = useState(false)
   const [ratesError, setRatesError] = useState('')
   const [showAddCurrency, setShowAddCurrency] = useState(false)
@@ -255,7 +257,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
                   </span>
                   <button
                     className="btn-icon btn-delete"
-                    onClick={() => handleRemoveCurrency(code)}
+                    onClick={() => setConfirmRemoveCurrency(code)}
                     title="移除"
                   >
                     <FontAwesomeIcon icon={faTrash} />
@@ -281,7 +283,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
               {admin && !trip.archived && trip.members.length > 1 && (
                 <button
                   className="btn-icon btn-delete"
-                  onClick={() => handleRemoveMember(m.id)}
+                  onClick={() => setConfirmRemoveMember(m.id)}
                 >
                   <FontAwesomeIcon icon={faTrash} />
                 </button>
@@ -344,6 +346,35 @@ export function TripSettings({ trip, members, onBack }: Props) {
           confirmText={trip.archived ? '解除' : '歸檔'}
           onConfirm={handleToggleArchive}
           onCancel={() => setConfirmArchive(false)}
+        />
+      )}
+
+      {confirmRemoveMember && (() => {
+        const member = members.find((m) => m.id === confirmRemoveMember)
+        return (
+          <ConfirmDialog
+            title="移除成員"
+            message={`確定要將「${member?.displayName}」從旅程中移除嗎？`}
+            confirmText="移除"
+            onConfirm={() => {
+              handleRemoveMember(confirmRemoveMember)
+              setConfirmRemoveMember(null)
+            }}
+            onCancel={() => setConfirmRemoveMember(null)}
+          />
+        )
+      })()}
+
+      {confirmRemoveCurrency && (
+        <ConfirmDialog
+          title="移除追蹤幣別"
+          message={`確定要移除「${confirmRemoveCurrency}」嗎？`}
+          confirmText="移除"
+          onConfirm={() => {
+            handleRemoveCurrency(confirmRemoveCurrency)
+            setConfirmRemoveCurrency(null)
+          }}
+          onCancel={() => setConfirmRemoveCurrency(null)}
         />
       )}
 

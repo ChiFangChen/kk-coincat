@@ -17,7 +17,8 @@ export function TripList({ onSelectTrip }: Props) {
   const currentUser = state.auth.currentUser
   if (!currentUser) return null
 
-  const myTrips = state.trips.filter((t) => t.members.includes(currentUser.id))
+  const admin = isCurrentUserAdmin() || !!localStorage.getItem('kk-coincat-admin-session')
+  const myTrips = admin ? state.trips : state.trips.filter((t) => t.members.includes(currentUser.id))
   const activeTrips = myTrips.filter((t) => !t.archived)
   const archivedTrips = myTrips.filter((t) => t.archived)
   const displayTrips = showArchived ? archivedTrips : activeTrips
