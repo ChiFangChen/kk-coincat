@@ -106,7 +106,7 @@ export function TripExpenses({ trip, members }: Props) {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-
+          placeholder="搜尋項目..."
         />
       </div>
 

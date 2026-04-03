@@ -12,7 +12,7 @@ export function SwitchUser({ onCancel }: Props) {
   const [error, setError] = useState('')
 
   const otherUsers = state.users.filter(
-    (u) => u.id !== state.auth.currentUser?.id
+    (u) => u.id !== state.auth.currentUser?.id && !u.deleted
   )
 
   const handleSubmit = (e: React.FormEvent) => {

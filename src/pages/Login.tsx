@@ -16,7 +16,7 @@ export function Login({ onSwitchToRegister }: Props) {
     setError('')
 
     const user = state.users.find(
-      (u) => u.username === username && u.password === password
+      (u) => u.username === username && u.password === password && !u.deleted
     )
     if (user) {
       login(user)

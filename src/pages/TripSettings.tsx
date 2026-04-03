@@ -4,7 +4,7 @@ import type { Trip, User } from '../types'
 import { fetchExchangeRates } from '../utils/currency'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSync, faArchive, faBoxOpen, faUserPlus, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faSync, faArchive, faBoxOpen, faUserPlus, faTrash, faPlus, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
 
 interface Props {
   trip: Trip
@@ -22,7 +22,23 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const [fetchingRates, setFetchingRates] = useState(false)
   const [ratesError, setRatesError] = useState('')
   const [showAddCurrency, setShowAddCurrency] = useState(false)
+  const [currencySearch, setCurrencySearch] = useState('')
   const [allRates, setAllRates] = useState<Record<string, number>>({})
+  const [editingRate, setEditingRate] = useState<string | null>(null)
+  const [editingRateValue, setEditingRateValue] = useState('')
+
+  const TRACKED_KEY = `kk-coincat-tracked-currencies-${trip.id}`
+  const [trackedList, setTrackedList] = useState<string[]>(() => {
+    const saved = localStorage.getItem(TRACKED_KEY)
+    if (saved) return JSON.parse(saved)
+    // Migrate: use existing exchangeRates keys as initial tracked list
+    return Object.keys(state.exchangeRates).filter((c) => c !== trip.primaryCurrency)
+  })
+
+  const saveTrackedList = (list: string[]) => {
+    setTrackedList(list)
+    localStorage.setItem(TRACKED_KEY, JSON.stringify(list))
+  }
 
   const currencies = ['TWD', 'JPY', 'THB', 'USD', 'CNY', 'KRW', 'EUR', 'GBP']
   const nonMembers = state.users.filter((u) => !trip.members.includes(u.id))
@@ -66,14 +82,8 @@ export function TripSettings({ trip, members, onBack }: Props) {
     setRatesError('')
     try {
       const rates = await fetchExchangeRates(trip.primaryCurrency)
-      const WHITELIST = ['TWD', 'JPY', 'THB', 'USD', 'CNY', 'KRW', 'EUR', 'GBP']
-      const filtered: Record<string, number> = {}
-      for (const code of WHITELIST) {
-        if (code !== trip.primaryCurrency && rates[code]) {
-          filtered[code] = rates[code]
-        }
-      }
-      updateExchangeRates({ ...state.exchangeRates, ...filtered })
+      // Update all rate values without changing the tracked list
+      updateExchangeRates({ ...state.exchangeRates, ...rates })
       const now = new Date().toISOString()
       localStorage.setItem(RATES_SYNC_KEY, now)
       setLastSynced(now)
@@ -85,8 +95,8 @@ export function TripSettings({ trip, members, onBack }: Props) {
     }
   }
 
-  const trackedCurrencies = Object.entries(state.exchangeRates)
-    .filter(([code]) => code !== trip.primaryCurrency)
+  const trackedCurrencies = trackedList
+    .map((code) => [code, state.exchangeRates[code] || 0] as [string, number])
     .sort(([a], [b]) => {
       const aIdx = currencies.indexOf(a)
       const bIdx = currencies.indexOf(b)
@@ -97,9 +107,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
     })
 
   const handleRemoveCurrency = (code: string) => {
-    const newRates = { ...state.exchangeRates }
-    delete newRates[code]
-    updateExchangeRates(newRates)
+    saveTrackedList(trackedList.filter((c) => c !== code))
   }
 
   const handleOpenAddCurrency = async () => {
@@ -115,14 +123,19 @@ export function TripSettings({ trip, members, onBack }: Props) {
   }
 
   const handleAddCurrency = (code: string) => {
-    const rate = allRates[code] || state.exchangeRates[code] || 1
-    updateExchangeRates({ ...state.exchangeRates, [code]: rate })
+    if (!trackedList.includes(code)) {
+      saveTrackedList([...trackedList, code])
+    }
+    // Also ensure rate exists
+    if (!state.exchangeRates[code] && allRates[code]) {
+      updateExchangeRates({ ...state.exchangeRates, [code]: allRates[code] })
+    }
     setShowAddCurrency(false)
   }
 
   const availableToAdd = Object.keys(allRates).length > 0
-    ? Object.keys(allRates).filter((code) => code !== trip.primaryCurrency && !state.exchangeRates[code]).sort()
-    : currencies.filter((c) => c !== trip.primaryCurrency && !state.exchangeRates[c])
+    ? Object.keys(allRates).filter((code) => code !== trip.primaryCurrency && !trackedList.includes(code)).sort()
+    : currencies.filter((c) => c !== trip.primaryCurrency && !trackedList.includes(c))
 
   return (
     <div className="page">
@@ -164,7 +177,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
       </div>
 
       {/* Exchange rates */}
-      <div className="settings-section">
+      {admin && <div className="settings-section">
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem' }}>
           <h2 style={{ margin: 0 }}>匯率</h2>
           <button
@@ -198,21 +211,64 @@ export function TripSettings({ trip, members, onBack }: Props) {
           {trackedCurrencies.map(([code, rate]) => (
             <div key={code} className="rate-item">
               <span className="rate-code">{code}</span>
-              <span className="rate-input" style={{ background: 'none' }}>{rate}</span>
-              <button
-                className="btn-icon btn-delete"
-                onClick={() => handleRemoveCurrency(code)}
-                title="移除"
-              >
-                <FontAwesomeIcon icon={faTrash} />
-              </button>
+              {editingRate === code ? (
+                <>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    className="rate-edit-input"
+                    value={editingRateValue}
+                    onChange={(e) => setEditingRateValue(e.target.value)}
+                    autoFocus
+                  />
+                  <button
+                    className="btn-icon"
+                    onClick={() => setEditingRate(null)}
+                    title="取消"
+                  >
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
+                  <button
+                    className="btn-icon btn-save"
+                    onClick={() => {
+                      const val = parseFloat(editingRateValue)
+                      if (!isNaN(val) && val > 0) {
+                        updateExchangeRates({ ...state.exchangeRates, [code]: val })
+                      }
+                      setEditingRate(null)
+                    }}
+                    title="儲存"
+                  >
+                    <FontAwesomeIcon icon={faCheck} />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span
+                    className="rate-value rate-value-editable"
+                    onClick={() => {
+                      setEditingRate(code)
+                      setEditingRateValue(String(rate))
+                    }}
+                  >
+                    {rate}
+                  </span>
+                  <button
+                    className="btn-icon btn-delete"
+                    onClick={() => handleRemoveCurrency(code)}
+                    title="移除"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </>
+              )}
             </div>
           ))}
           {trackedCurrencies.length === 0 && (
             <div className="empty-state" style={{ padding: '1rem 0' }}>尚未追蹤任何外幣</div>
           )}
         </div>
-      </div>
+      </div>}
 
       {/* Members */}
       <div className="settings-section">
@@ -245,7 +301,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
       </div>
 
       {/* Archive */}
-      <div className="settings-section">
+      {admin && <div className="settings-section">
         <h2>{trip.archived ? '解除歸檔' : '歸檔旅程'}</h2>
         <p className="settings-hint">
           {trip.archived ? '解除後可以繼續編輯帳務' : '歸檔後旅程將變為唯讀'}
@@ -257,7 +313,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
           <FontAwesomeIcon icon={trip.archived ? faBoxOpen : faArchive} />
           {trip.archived ? ' 解除歸檔' : ' 歸檔'}
         </button>
-      </div>
+      </div>}
 
       {/* Add member dialog */}
       {showAddMember && (
@@ -291,34 +347,49 @@ export function TripSettings({ trip, members, onBack }: Props) {
         />
       )}
 
-      {showAddCurrency && (
-        <div className="dialog-overlay" onClick={() => setShowAddCurrency(false)}>
-          <div className="dialog" onClick={(e) => e.stopPropagation()}>
-            <h3>新增追蹤幣別</h3>
-            {availableToAdd.length === 0 ? (
-              <p className="settings-hint">沒有可新增的幣別</p>
-            ) : (
-              <div style={{ maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                {availableToAdd.map((code) => (
-                  <button
-                    key={code}
-                    className="btn btn-secondary"
-                    onClick={() => handleAddCurrency(code)}
-                    style={{ justifyContent: 'flex-start' }}
-                  >
-                    {code} {allRates[code] ? `(${allRates[code].toFixed(4)})` : ''}
-                  </button>
-                ))}
+      {showAddCurrency && (() => {
+        const q = currencySearch.toUpperCase()
+        const filtered = availableToAdd.filter((code) => code.includes(q))
+        return (
+          <div className="dialog-overlay" onClick={() => { setShowAddCurrency(false); setCurrencySearch('') }}>
+            <div className="dialog" onClick={(e) => e.stopPropagation()}>
+              <h3>新增追蹤幣別</h3>
+              <div className="form-group">
+                <input
+                  type="text"
+                  value={currencySearch}
+                  onChange={(e) => setCurrencySearch(e.target.value)}
+                  placeholder="搜尋幣別..."
+                  autoFocus
+                />
               </div>
-            )}
-            <div className="dialog-actions">
-              <button className="btn btn-secondary" onClick={() => setShowAddCurrency(false)}>
-                關閉
-              </button>
+              <div style={{ height: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              {filtered.length === 0 ? (
+                <p className="settings-hint">沒有符合的幣別</p>
+              ) : (
+                <>
+                  {filtered.map((code) => (
+                    <button
+                      key={code}
+                      className="btn btn-secondary"
+                      onClick={() => { handleAddCurrency(code); setCurrencySearch('') }}
+                      style={{ justifyContent: 'flex-start' }}
+                    >
+                      {code} {allRates[code] ? `(${allRates[code].toFixed(4)})` : ''}
+                    </button>
+                  ))}
+                </>
+              )}
+              </div>
+              <div className="dialog-actions">
+                <button className="btn btn-secondary" onClick={() => { setShowAddCurrency(false); setCurrencySearch('') }}>
+                  關閉
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }

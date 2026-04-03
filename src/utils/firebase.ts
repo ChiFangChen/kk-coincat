@@ -59,6 +59,10 @@ export async function syncUser(db: Firestore, user: User): Promise<void> {
   await setDoc(doc(db, 'ccUsers', user.id), user)
 }
 
+export async function deleteUserFromFirestore(db: Firestore, id: string): Promise<void> {
+  await deleteDoc(doc(db, 'ccUsers', id))
+}
+
 export async function findUserByUsername(db: Firestore, username: string): Promise<User | null> {
   const q = query(collection(db, 'ccUsers'), where('username', '==', username))
   const snapshot = await getDocs(q)

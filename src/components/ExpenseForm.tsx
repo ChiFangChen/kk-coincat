@@ -31,7 +31,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
     editingExpense?.participants || savedPrefs?.participants || trip.members
   )
   const [splitDetails, setSplitDetails] = useState<SplitDetail[]>(
-    editingExpense?.splitDetails || members.map((m) => ({ userId: m.id, value: 1 }))
+    editingExpense?.splitDetails || members.map((m) => ({ userId: m.id, value: 0 }))
   )
   const [datetime, setDatetime] = useState(() => {
     if (editingExpense) return editingExpense.createdAt.slice(0, 16)
@@ -61,21 +61,54 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
     )
   }
 
+  const [showSplitError, setShowSplitError] = useState(false)
+  const [submitAttempted, setSubmitAttempted] = useState(false)
+
   const updateSplitValue = (userId: string, value: number) => {
     setSplitDetails((prev) =>
-      prev.map((d) => (d.userId === userId ? { ...d, value } : d))
+      prev.map((d) => (d.userId === userId ? { ...d, value: Math.round(value) } : d))
     )
+  }
+
+  const handleBalanceValue = (userId: string) => {
+    const activeSplits = splitDetails.filter((d) => participants.includes(d.userId))
+    const othersSum = activeSplits
+      .filter((d) => d.userId !== userId)
+      .reduce((s, d) => s + d.value, 0)
+    const target = splitMethod === 'ratio' ? 100 : Math.round(parseFloat(amount) || 0)
+    const remaining = target - othersSum
+    updateSplitValue(userId, remaining > 0 ? remaining : 0)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitAttempted(true)
+    setShowSplitError(true)
     if (!payer || !item.trim() || !amount || participants.length === 0) return
 
     const numAmount = parseFloat(amount)
     if (isNaN(numAmount) || numAmount <= 0) return
 
+    // Validate split details
+    const activeSplits = splitDetails.filter((d) => participants.includes(d.userId))
+    let finalParticipants = participants
+    if (splitMethod === 'ratio' || splitMethod === 'amount') {
+      // Exclude participants with 0 value
+      finalParticipants = activeSplits.filter((d) => d.value > 0).map((d) => d.userId)
+      if (finalParticipants.length === 0) return
+    }
+    const finalSplits = splitDetails.filter((d) => finalParticipants.includes(d.userId))
+    if (splitMethod === 'ratio') {
+      const sum = finalSplits.reduce((s, d) => s + d.value, 0)
+      if (Math.abs(sum - 100) > 0.01) return
+    }
+    if (splitMethod === 'amount') {
+      const sum = finalSplits.reduce((s, d) => s + d.value, 0)
+      if (Math.abs(sum - numAmount) > 0.01) return
+    }
+
     // Save prefs for next time
-    saveExpensePrefs(trip.id, { splitMethod, participants })
+    saveExpensePrefs(trip.id, { splitMethod, participants: finalParticipants })
 
     const expenseData = {
       tripId: trip.id,
@@ -84,8 +117,8 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
       item: item.trim(),
       currency,
       splitMethod,
-      participants,
-      splitDetails: splitDetails.filter((d) => participants.includes(d.userId)),
+      participants: finalParticipants,
+      splitDetails: finalSplits,
       isSettlement,
       createdAt: new Date(datetime).toISOString(),
     }
@@ -132,6 +165,9 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
                 </button>
               ))}
             </div>
+            {submitAttempted && !payer && (
+              <div className="split-error">請選擇付款人</div>
+            )}
           </div>
 
           <div className="form-group">
@@ -144,6 +180,9 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
               required
               autoFocus
             />
+            {submitAttempted && !item.trim() && (
+              <div className="split-error">請輸入項目名稱</div>
+            )}
           </div>
 
           <div className="form-row">
@@ -158,6 +197,9 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
                 min="0"
                 required
               />
+              {submitAttempted && (!amount || parseFloat(amount) <= 0) && (
+                <div className="split-error">請輸入金額</div>
+              )}
             </div>
             <div className="form-group">
               <label>幣別</label>
@@ -205,35 +247,63 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
                 </label>
               ))}
             </div>
+            {submitAttempted && participants.length === 0 && (
+              <div className="split-error">請選擇至少一位參與者</div>
+            )}
           </div>
 
-          {splitMethod !== 'equal' && (
-            <div className="form-group">
-              <label>{splitMethod === 'ratio' ? '比例' : '金額'}</label>
-              <div className="split-details">
-                {splitDetails
-                  .filter((d) => participants.includes(d.userId))
-                  .map((detail) => {
+          {splitMethod !== 'equal' && (() => {
+            const activeSplits = splitDetails.filter((d) => participants.includes(d.userId))
+            const splitSum = activeSplits.reduce((s, d) => s + d.value, 0)
+            const numAmount = Math.round(parseFloat(amount) || 0)
+            const ratioInvalid = splitMethod === 'ratio' && splitSum !== 100
+            const amountInvalid = splitMethod === 'amount' && splitSum !== numAmount
+            const hasError = showSplitError && (ratioInvalid || amountInvalid)
+            return (
+              <div className="form-group">
+                <label>{splitMethod === 'ratio' ? '比例' : '金額'}</label>
+                <div className="split-details">
+                  {activeSplits.map((detail) => {
                     const member = members.find((m) => m.id === detail.userId)
                     return (
                       <div key={detail.userId} className="split-detail-row">
                         <span className="split-detail-name">{member?.displayName}<span className="color-dot" style={{ backgroundColor: member?.color }} /></span>
-                        <input
-                          type="number"
-                          value={detail.value}
-                          onChange={(e) =>
-                            updateSplitValue(detail.userId, parseFloat(e.target.value) || 0)
-                          }
-                          step="any"
-                          min="0"
-                          className="split-detail-input"
-                        />
+                        <div className="split-detail-input-wrap">
+                          <input
+                            type="number"
+                            inputMode="numeric"
+                            value={detail.value || ''}
+                            onChange={(e) =>
+                              updateSplitValue(detail.userId, parseInt(e.target.value) || 0)
+                            }
+                            onBlur={() => setShowSplitError(true)}
+                            onFocus={() => setShowSplitError(false)}
+                            step="1"
+                            min="0"
+                            className="split-detail-input"
+                          />
+                          {splitMethod === 'ratio' && <span className="split-detail-suffix">%</span>}
+                        </div>
+                        <button
+                          type="button"
+                          className={`btn btn-sm btn-secondary split-balance-btn${hasError ? '' : ' split-balance-hidden'}`}
+                          onClick={() => handleBalanceValue(detail.userId)}
+                        >
+                          平衡
+                        </button>
                       </div>
                     )
                   })}
+                </div>
+                {hasError && splitMethod === 'ratio' && (
+                  <div className="split-error">合計 {splitSum}%，需為 100%</div>
+                )}
+                {hasError && splitMethod === 'amount' && (
+                  <div className="split-error">合計 {splitSum}，需為 {numAmount}</div>
+                )}
               </div>
-            </div>
-          )}
+            )
+          })()}
 
           <div className="form-group">
             <label>日期時間</label>

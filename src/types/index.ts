@@ -5,6 +5,7 @@ export interface User {
   displayName: string
   color: string
   isAdmin: boolean
+  deleted?: boolean
   createdAt: string
 }
 

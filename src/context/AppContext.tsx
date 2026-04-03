@@ -97,6 +97,7 @@ interface AppContextValue {
   logout: () => void
   register: (username: string, password: string, displayName: string) => Promise<User>
   updateUser: (user: User) => void
+  deleteUser: (id: string) => void
   addTrip: (name: string, primaryCurrency: string, memberIds: string[]) => void
   updateTrip: (trip: Trip) => void
   addExpense: (data: Omit<TripExpense, 'id' | 'updatedAt' | 'convertedAmount' | 'exchangeRate'> & { currency: string }) => void
@@ -180,6 +181,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (user.id === state.auth.currentUser?.id) saveAuth(user)
     if (dbRef.current) syncUser(dbRef.current, user)
   }, [state.auth.currentUser])
+
+  const deleteUser = useCallback((id: string) => {
+    const user = state.users.find((u) => u.id === id)
+    if (!user) return
+    const deleted = { ...user, deleted: true }
+    dispatch({ type: 'UPDATE_USER', user: deleted })
+    if (dbRef.current) syncUser(dbRef.current, deleted)
+  }, [state.users])
 
   const addTrip = useCallback((name: string, primaryCurrency: string, memberIds: string[]) => {
     if (!state.auth.currentUser) return
@@ -296,6 +305,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         logout,
         register,
         updateUser,
+        deleteUser,
         addTrip,
         updateTrip: updateTripAction,
         addExpense,

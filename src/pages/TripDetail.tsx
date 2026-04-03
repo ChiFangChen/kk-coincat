@@ -59,7 +59,7 @@ export function TripDetail({ tripId, onBack }: Props) {
       </div>
 
       <NavBar activeTab={activeTab} onTabChange={setActiveTab} />
-      {showUserMenu && <UserMenu onClose={() => setShowUserMenu(false)} />}
+      {showUserMenu && <UserMenu onClose={() => setShowUserMenu(false)} onSwitchUser={onBack} />}
     </div>
   )
 }
