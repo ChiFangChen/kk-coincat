@@ -17,7 +17,7 @@ export function Login({ onSwitchToRegister }: Props) {
   const [forgotError, setForgotError] = useState('')
   const [forgotSuccess, setForgotSuccess] = useState(false)
   const tapCountRef = useRef(0)
-  const tapTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
