@@ -313,6 +313,8 @@ body {
   opacity: 0.9;
 }
 .filter-title {
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
