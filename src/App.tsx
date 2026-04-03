@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AppProvider, useApp } from './context/AppContext'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
@@ -11,6 +11,12 @@ import './App.css'
 
 function AppContent() {
   const { state, updateSettings } = useApp()
+
+  // Sync theme class to <html> so background-color stays correct during transitions
+  useEffect(() => {
+    document.documentElement.className = `theme-${state.settings.theme}`
+  }, [state.settings.theme])
+
   const [authPage, setAuthPage] = useState<'login' | 'register'>('login')
   const [selectedTripId, setSelectedTripId] = useState<string | null>(() => {
     return localStorage.getItem('kk-coincat-route-trip') || null
