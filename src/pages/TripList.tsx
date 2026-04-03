@@ -61,20 +61,19 @@ export function TripList({ onSelectTrip }: Props) {
   return (
     <div className="page">
       <div className="page-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {admin ? (
+          <select
+            className="select-title"
+            value={adminFilter}
+            onChange={(e) => handleAdminFilterChange(e.target.value as AdminFilter)}
+          >
+            <option value="all">全部旅程</option>
+            <option value="mine">包含我的旅程</option>
+            <option value="others">不包含我的旅程</option>
+          </select>
+        ) : (
           <h1>旅程</h1>
-          {admin && (
-            <select
-              className="select-sm"
-              value={adminFilter}
-              onChange={(e) => handleAdminFilterChange(e.target.value as AdminFilter)}
-            >
-              <option value="all">全部</option>
-              <option value="mine">包含我</option>
-              <option value="others">不含我</option>
-            </select>
-          )}
-        </div>
+        )}
         {isCurrentUserAdmin() && (
           <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>
             <FontAwesomeIcon icon={faPlus} />
