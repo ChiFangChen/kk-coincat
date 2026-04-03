@@ -279,7 +279,19 @@ export function TripSettings({ trip, members, onBack }: Props) {
 
       {/* Members */}
       <div className="settings-section">
-        <h2>成員</h2>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <h2 style={{ margin: 0 }}>成員</h2>
+          {admin && !trip.archived && nonMembers.length > 0 && (
+            <button
+              className="btn btn-sm btn-primary"
+              onClick={() => setShowAddMember(true)}
+              style={{ marginLeft: 'auto' }}
+              title="新增成員"
+            >
+              <FontAwesomeIcon icon={faUserPlus} />
+            </button>
+          )}
+        </div>
         <div className="member-list-settings">
           {members.map((m) => (
             <div key={m.id} className="member-row">
@@ -296,39 +308,30 @@ export function TripSettings({ trip, members, onBack }: Props) {
             </div>
           ))}
         </div>
-        {admin && !trip.archived && nonMembers.length > 0 && (
-          <button
-            className="btn btn-sm btn-secondary"
-            style={{ marginTop: '0.75rem' }}
-            onClick={() => setShowAddMember(true)}
-          >
-            <FontAwesomeIcon icon={faUserPlus} /> 新增成員
-          </button>
-        )}
       </div>
 
       {/* Archive */}
       {admin && <div className="settings-section">
-        <h2>{trip.archived ? '解除歸檔' : '歸檔旅程'}</h2>
-        <p className="settings-hint">
-          {trip.archived ? '解除後可以繼續編輯帳務' : '歸檔後旅程將變為唯讀'}
-        </p>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button
-            className={`btn btn-sm ${trip.archived ? 'btn-primary' : 'btn-warning'}`}
-            onClick={() => setConfirmArchive(true)}
-          >
-            <FontAwesomeIcon icon={trip.archived ? faBoxOpen : faArchive} />
-            {trip.archived ? ' 解除歸檔' : ' 歸檔'}
-          </button>
-          {trip.archived && (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h2 style={{ margin: 0 }}>{trip.archived ? '已歸檔' : '歸檔旅程'}</h2>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
             <button
-              className="btn btn-sm btn-warning"
-              onClick={() => setConfirmDeleteTrip(true)}
+              className={`btn btn-sm ${trip.archived ? 'btn-primary' : 'btn-warning'}`}
+              onClick={() => setConfirmArchive(true)}
+              title={trip.archived ? '解除歸檔' : '歸檔'}
             >
-              <FontAwesomeIcon icon={faTrash} /> 刪除旅程
+              <FontAwesomeIcon icon={trip.archived ? faBoxOpen : faArchive} />
             </button>
-          )}
+            {trip.archived && (
+              <button
+                className="btn btn-sm btn-warning"
+                onClick={() => setConfirmDeleteTrip(true)}
+                title="刪除旅程"
+              >
+                <FontAwesomeIcon icon={faTrash} />
+              </button>
+            )}
+          </div>
         </div>
       </div>}
 
