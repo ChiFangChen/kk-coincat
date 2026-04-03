@@ -69,7 +69,6 @@ body {
 }
 .page {
   padding: 1rem;
-  min-height: calc(100dvh - 64px - env(safe-area-inset-bottom, 0px));
 }
 
 /* Top bar */
