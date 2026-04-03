@@ -13,6 +13,7 @@ import {
   subscribeToExchangeRates,
   syncUser,
   syncTrip,
+  deleteTripFromFirestore,
   syncTripExpense,
   deleteTripExpenseFromFirestore,
   syncExchangeRates,
@@ -26,6 +27,7 @@ type Action =
   | { type: 'SET_TRIPS'; trips: Trip[] }
   | { type: 'ADD_TRIP'; trip: Trip }
   | { type: 'UPDATE_TRIP'; trip: Trip }
+  | { type: 'DELETE_TRIP'; id: string }
   | { type: 'SET_EXPENSES'; expenses: TripExpense[] }
   | { type: 'ADD_EXPENSE'; expense: TripExpense }
   | { type: 'UPDATE_EXPENSE'; expense: TripExpense }
@@ -61,6 +63,12 @@ function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         trips: state.trips.map((t) => (t.id === action.trip.id ? action.trip : t)),
+      }
+    case 'DELETE_TRIP':
+      return {
+        ...state,
+        trips: state.trips.filter((t) => t.id !== action.id),
+        expenses: state.expenses.filter((e) => e.tripId !== action.id),
       }
     case 'SET_EXPENSES':
       return { ...state, expenses: action.expenses }
@@ -100,6 +108,7 @@ interface AppContextValue {
   deleteUser: (id: string) => void
   addTrip: (name: string, primaryCurrency: string, memberIds: string[]) => void
   updateTrip: (trip: Trip) => void
+  deleteTrip: (id: string) => void
   addExpense: (data: Omit<TripExpense, 'id' | 'updatedAt' | 'convertedAmount' | 'exchangeRate'> & { currency: string }) => void
   updateExpense: (expense: TripExpense) => void
   deleteExpense: (id: string) => void
@@ -213,6 +222,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (dbRef.current) syncTrip(dbRef.current, updated)
   }, [])
 
+  const deleteTripAction = useCallback((id: string) => {
+    // Delete trip and its expenses
+    const tripExpenses = state.expenses.filter((e) => e.tripId === id)
+    dispatch({ type: 'DELETE_TRIP', id })
+    if (dbRef.current) {
+      deleteTripFromFirestore(dbRef.current, id)
+      tripExpenses.forEach((e) => deleteTripExpenseFromFirestore(dbRef.current!, e.id))
+    }
+  }, [state.expenses])
+
   const addExpense = useCallback((data: Omit<TripExpense, 'id' | 'updatedAt' | 'convertedAmount' | 'exchangeRate'> & { currency: string }) => {
     const trip = state.trips.find((t) => t.id === data.tripId)
     if (!trip) return
@@ -308,6 +327,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteUser,
         addTrip,
         updateTrip: updateTripAction,
+        deleteTrip: deleteTripAction,
         addExpense,
         updateExpense,
         deleteExpense,

@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function TripSettings({ trip, members, onBack }: Props) {
-  const { state, updateTrip, updateExchangeRates, isCurrentUserAdmin } = useApp()
+  const { state, updateTrip, deleteTrip, updateExchangeRates, isCurrentUserAdmin } = useApp()
   const admin = isCurrentUserAdmin()
   const [name, setName] = useState(trip.name)
   const [currency, setCurrency] = useState(trip.primaryCurrency)
@@ -21,6 +21,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const [confirmArchive, setConfirmArchive] = useState(false)
   const [confirmRemoveMember, setConfirmRemoveMember] = useState<string | null>(null)
   const [confirmRemoveCurrency, setConfirmRemoveCurrency] = useState<string | null>(null)
+  const [confirmDeleteTrip, setConfirmDeleteTrip] = useState(false)
   const [fetchingRates, setFetchingRates] = useState(false)
   const [ratesError, setRatesError] = useState('')
   const [showAddCurrency, setShowAddCurrency] = useState(false)
@@ -165,17 +166,20 @@ export function TripSettings({ trip, members, onBack }: Props) {
       {/* Currency */}
       <div className="settings-section">
         <h2>主幣別</h2>
-        <div className="form-group">
-          <select
-            value={currency}
-            onChange={(e) => handleSaveCurrency(e.target.value)}
-            disabled={!admin || trip.archived}
-          >
-            {currencies.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
+        {admin && !trip.archived ? (
+          <div className="form-group">
+            <select
+              value={currency}
+              onChange={(e) => handleSaveCurrency(e.target.value)}
+            >
+              {currencies.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="settings-value">{trip.primaryCurrency}</div>
+        )}
       </div>
 
       {/* Exchange rates */}
@@ -308,13 +312,23 @@ export function TripSettings({ trip, members, onBack }: Props) {
         <p className="settings-hint">
           {trip.archived ? '解除後可以繼續編輯帳務' : '歸檔後旅程將變為唯讀'}
         </p>
-        <button
-          className={`btn btn-sm ${trip.archived ? 'btn-primary' : 'btn-warning'}`}
-          onClick={() => setConfirmArchive(true)}
-        >
-          <FontAwesomeIcon icon={trip.archived ? faBoxOpen : faArchive} />
-          {trip.archived ? ' 解除歸檔' : ' 歸檔'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            className={`btn btn-sm ${trip.archived ? 'btn-primary' : 'btn-warning'}`}
+            onClick={() => setConfirmArchive(true)}
+          >
+            <FontAwesomeIcon icon={trip.archived ? faBoxOpen : faArchive} />
+            {trip.archived ? ' 解除歸檔' : ' 歸檔'}
+          </button>
+          {trip.archived && (
+            <button
+              className="btn btn-sm btn-warning"
+              onClick={() => setConfirmDeleteTrip(true)}
+            >
+              <FontAwesomeIcon icon={faTrash} /> 刪除旅程
+            </button>
+          )}
+        </div>
       </div>}
 
       {/* Add member dialog */}
@@ -375,6 +389,19 @@ export function TripSettings({ trip, members, onBack }: Props) {
             setConfirmRemoveCurrency(null)
           }}
           onCancel={() => setConfirmRemoveCurrency(null)}
+        />
+      )}
+
+      {confirmDeleteTrip && (
+        <ConfirmDialog
+          title="刪除旅程"
+          message={`確定要刪除「${trip.name}」嗎？所有帳務紀錄將一併刪除，此操作無法復原。`}
+          confirmText="刪除"
+          onConfirm={() => {
+            deleteTrip(trip.id)
+            onBack()
+          }}
+          onCancel={() => setConfirmDeleteTrip(false)}
         />
       )}
 
