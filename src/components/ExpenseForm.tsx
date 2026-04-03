@@ -110,7 +110,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
     }
 
     // Save prefs for next time
-    saveExpensePrefs(trip.id, { splitMethod, participants: finalParticipants })
+    saveExpensePrefs(trip.id, { splitMethod, participants: finalParticipants, currency })
 
     const expenseData = {
       tripId: trip.id,

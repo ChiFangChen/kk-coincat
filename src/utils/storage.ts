@@ -70,6 +70,7 @@ export function clearAuth(): void {
 export interface ExpensePrefs {
   splitMethod: string
   participants: string[]
+  currency?: string
 }
 
 export function loadExpensePrefs(tripId: string): ExpensePrefs | null {
