@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function TripList({ onSelectTrip }: Props) {
-  const { state, getUserName, getTripExpenses } = useApp()
+  const { state, getUserName, getTripExpenses, isCurrentUserAdmin } = useApp()
   const [showCreate, setShowCreate] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
 
@@ -40,9 +40,11 @@ export function TripList({ onSelectTrip }: Props) {
     <div className="page">
       <div className="page-header">
         <h1>我的旅程</h1>
-        <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>
-          <FontAwesomeIcon icon={faPlus} /> 新增
-        </button>
+        {isCurrentUserAdmin() && (
+          <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>
+            <FontAwesomeIcon icon={faPlus} /> 新增
+          </button>
+        )}
       </div>
 
       <div className="filter-bar">

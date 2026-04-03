@@ -3,6 +3,7 @@ export interface User {
   username: string
   password: string
   displayName: string
+  isAdmin: boolean
   createdAt: string
 }
 

@@ -27,7 +27,7 @@ export function Login({ onSwitchToRegister }: Props) {
 
   return (
     <div className="identity-page">
-      <div className="login-logo">🐱</div>
+      <div className="login-logo">🐈‍⬛</div>
       <h1 className="identity-title">KK CoinCat</h1>
       <p className="identity-subtitle">旅行分帳好夥伴</p>
 
@@ -39,7 +39,7 @@ export function Login({ onSwitchToRegister }: Props) {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="輸入帳號"
-            autoComplete="username"
+            autoComplete="off"
             required
           />
         </div>
@@ -50,7 +50,7 @@ export function Login({ onSwitchToRegister }: Props) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="輸入密碼"
-            autoComplete="current-password"
+            autoComplete="off"
             required
           />
         </div>

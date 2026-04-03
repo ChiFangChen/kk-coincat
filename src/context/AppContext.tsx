@@ -92,6 +92,7 @@ interface AppContextValue {
   getUserName: (userId: string) => string
   getTripExpenses: (tripId: string) => TripExpense[]
   getTripMembers: (trip: Trip) => User[]
+  isCurrentUserAdmin: () => boolean
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -139,11 +140,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const register = useCallback(async (username: string, password: string, displayName: string): Promise<User> => {
+    const isFirstUser = state.users.length === 0
     const user: User = {
       id: generateId(),
       username,
       password,
       displayName,
+      isAdmin: isFirstUser,
       createdAt: new Date().toISOString(),
     }
     dispatch({ type: 'ADD_USER', user })
@@ -244,6 +247,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .filter((u): u is User => u !== undefined)
   }, [state.users])
 
+  const isCurrentUserAdmin = useCallback((): boolean => {
+    const user = state.auth.currentUser
+    if (!user) return false
+    if (user.isAdmin) return true
+    // Fallback: the earliest registered user is admin
+    const sorted = [...state.users].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    return sorted.length > 0 && sorted[0].id === user.id
+  }, [state.auth.currentUser, state.users])
+
   return (
     <AppContext.Provider
       value={{
@@ -261,6 +273,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         getUserName,
         getTripExpenses,
         getTripMembers,
+        isCurrentUserAdmin,
       }}
     >
       {children}

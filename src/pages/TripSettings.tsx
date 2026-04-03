@@ -13,7 +13,8 @@ interface Props {
 }
 
 export function TripSettings({ trip, members, onBack }: Props) {
-  const { state, updateTrip, updateExchangeRates } = useApp()
+  const { state, updateTrip, updateExchangeRates, isCurrentUserAdmin } = useApp()
+  const admin = isCurrentUserAdmin()
   const [name, setName] = useState(trip.name)
   const [currency, setCurrency] = useState(trip.primaryCurrency)
   const [showAddMember, setShowAddMember] = useState(false)
@@ -89,7 +90,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={handleSaveName}
-            disabled={trip.archived}
+            disabled={!admin || trip.archived}
           />
         </div>
       </div>
@@ -101,7 +102,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
           <select
             value={currency}
             onChange={(e) => handleSaveCurrency(e.target.value)}
-            disabled={trip.archived}
+            disabled={!admin || trip.archived}
           >
             {currencies.map((c) => (
               <option key={c} value={c}>{c}</option>
@@ -143,7 +144,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
               <div className="payer-badge">{m.displayName.charAt(0).toUpperCase()}</div>
               <span className="member-row-name">{m.displayName}</span>
               {m.id === trip.creator && <span className="you-tag">建立者</span>}
-              {!trip.archived && trip.members.length > 1 && m.id !== trip.creator && (
+              {admin && !trip.archived && trip.members.length > 1 && (
                 <button
                   className="btn-icon btn-delete"
                   onClick={() => handleRemoveMember(m.id)}
@@ -154,7 +155,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
             </div>
           ))}
         </div>
-        {!trip.archived && nonMembers.length > 0 && (
+        {admin && !trip.archived && nonMembers.length > 0 && (
           <button
             className="btn btn-sm btn-secondary"
             style={{ marginTop: '0.75rem' }}

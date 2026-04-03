@@ -12,7 +12,9 @@ import './App.css'
 function AppContent() {
   const { state, updateSettings } = useApp()
   const [authPage, setAuthPage] = useState<'login' | 'register'>('login')
-  const [selectedTripId, setSelectedTripId] = useState<string | null>(null)
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(() => {
+    return localStorage.getItem('kk-coincat-route-trip') || null
+  })
   const [showSwitchUser, setShowSwitchUser] = useState(false)
 
   // Not logged in
@@ -29,7 +31,10 @@ function AppContent() {
       <div className={`theme-${state.settings.theme}`}>
         <TripDetail
           tripId={selectedTripId}
-          onBack={() => setSelectedTripId(null)}
+          onBack={() => {
+            setSelectedTripId(null)
+            localStorage.removeItem('kk-coincat-route-trip')
+          }}
         />
       </div>
     )
@@ -40,7 +45,7 @@ function AppContent() {
     <div className={`app theme-${state.settings.theme}`}>
       <div className="top-bar">
         <div className="top-bar-left">
-          <span className="top-bar-logo">🐱</span>
+          <span className="top-bar-logo">🐈‍⬛</span>
           <span className="top-bar-title">KK CoinCat</span>
         </div>
         <div className="top-bar-right">
@@ -58,7 +63,10 @@ function AppContent() {
         </div>
       </div>
       <div className="app-content">
-        <TripList onSelectTrip={(id) => setSelectedTripId(id)} />
+        <TripList onSelectTrip={(id) => {
+          setSelectedTripId(id)
+          localStorage.setItem('kk-coincat-route-trip', id)
+        }} />
       </div>
 
       {showSwitchUser && <SwitchUser onCancel={() => setShowSwitchUser(false)} />}
