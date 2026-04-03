@@ -41,7 +41,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
   }
 
   const currencies = ['TWD', 'JPY', 'THB', 'USD', 'CNY', 'KRW', 'EUR', 'GBP']
-  const nonMembers = state.users.filter((u) => !trip.members.includes(u.id))
+  const nonMembers = state.users.filter((u) => !trip.members.includes(u.id) && !u.deleted)
 
   const handleSaveName = () => {
     if (name.trim() && name !== trip.name) {
