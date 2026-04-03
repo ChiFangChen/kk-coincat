@@ -43,7 +43,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
     localStorage.setItem(TRACKED_KEY, JSON.stringify(list))
   }
 
-  const currencies = [trip.primaryCurrency, ...trackedList.filter((c) => c !== trip.primaryCurrency)]
+  const currencies = ['TWD', ...trackedList.filter((c) => c !== 'TWD')]
   const nonMembers = state.users.filter((u) => !trip.members.includes(u.id) && !u.deleted)
 
   const handleSaveName = () => {
@@ -166,21 +166,10 @@ export function TripSettings({ trip, members, onBack }: Props) {
 
       {/* Currency */}
       <div className="settings-section">
-        <h2>主幣別</h2>
-        {admin && !trip.archived ? (
-          <div className="form-group">
-            <select
-              value={currency}
-              onChange={(e) => handleSaveCurrency(e.target.value)}
-            >
-              {currencies.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-        ) : (
-          <div className="settings-value">{trip.primaryCurrency}</div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h2 style={{ margin: 0 }}>主幣別</h2>
+          <span className="settings-value" style={{ marginLeft: 'auto' }}>TWD</span>
+        </div>
       </div>
 
       {/* Exchange rates */}
