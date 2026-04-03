@@ -41,7 +41,7 @@ export function UserMenu({ onClose, onSwitchUser }: Props) {
       return
     }
 
-    if (state.users.some((u) => u.username === username)) {
+    if (state.users.some((u) => u.username === username && !u.deleted)) {
       setRegError('帳號已存在')
       return
     }

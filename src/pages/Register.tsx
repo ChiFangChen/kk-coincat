@@ -16,7 +16,7 @@ export function Register({ onSwitchToLogin }: Props) {
     e.preventDefault()
     setError('')
 
-    if (state.users.some((u) => u.username === username)) {
+    if (state.users.some((u) => u.username === username && !u.deleted)) {
       setError('帳號已存在')
       return
     }
