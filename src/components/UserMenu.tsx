@@ -15,11 +15,13 @@ export function UserMenu({ onClose, onSwitchUser }: Props) {
   const { state, login, logout, updateUser, deleteUser, register, isCurrentUserAdmin } = useApp()
   const currentUser = state.auth.currentUser
   const admin = isCurrentUserAdmin()
-  const [view, setView] = useState<'menu' | 'register' | 'manage' | 'switch'>('menu')
+  const [view, setView] = useState<'menu' | 'register' | 'manage' | 'switch' | 'resetpw'>('menu')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [regError, setRegError] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [resetSuccess, setResetSuccess] = useState(false)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -160,6 +162,19 @@ export function UserMenu({ onClose, onSwitchUser }: Props) {
                 切換使用者
               </button>
             )}
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ width: '100%' }}
+              onClick={() => {
+                setNewPassword('')
+                setResetSuccess(false)
+                setView('resetpw')
+              }}
+            >
+              重置密碼
+            </button>
 
             <button
               type="button"
@@ -312,6 +327,43 @@ export function UserMenu({ onClose, onSwitchUser }: Props) {
             <div className="dialog-actions">
               <button type="button" className="btn btn-secondary" onClick={() => setView('menu')}>返回</button>
             </div>
+          </>
+        )}
+
+        {view === 'resetpw' && (
+          <>
+            <h3>重置密碼</h3>
+            {resetSuccess ? (
+              <>
+                <p className="settings-hint">密碼已重置成功</p>
+                <div className="dialog-actions">
+                  <button type="button" className="btn btn-secondary" onClick={() => setView('menu')}>返回</button>
+                </div>
+              </>
+            ) : (
+              <form onSubmit={(e) => {
+                e.preventDefault()
+                if (!newPassword) return
+                updateUser({ ...currentUser, password: newPassword })
+                setResetSuccess(true)
+              }} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div className="form-group">
+                  <label>新密碼</label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    autoComplete="off"
+                    autoFocus
+                    required
+                  />
+                </div>
+                <div className="dialog-actions">
+                  <button type="button" className="btn btn-secondary" onClick={() => setView('menu')}>取消</button>
+                  <button type="submit" className="btn btn-primary">確認</button>
+                </div>
+              </form>
+            )}
           </>
         )}
       </div>
