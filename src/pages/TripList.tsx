@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { calculateBalances } from '../utils/settlement'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus, faArchive, faBoxOpen } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faArchive, faBoxOpen, faRepeat } from '@fortawesome/free-solid-svg-icons'
 import { CreateTrip } from '../components/CreateTrip'
 
 type AdminFilter = 'all' | 'mine' | 'others'
@@ -62,15 +62,16 @@ export function TripList({ onSelectTrip }: Props) {
     <div className="page">
       <div className="page-header">
         {admin ? (
-          <select
-            className="select-title"
-            value={adminFilter}
-            onChange={(e) => handleAdminFilterChange(e.target.value as AdminFilter)}
+          <h1
+            className="filter-title"
+            onClick={() => {
+              const next: AdminFilter = adminFilter === 'all' ? 'mine' : adminFilter === 'mine' ? 'others' : 'all'
+              handleAdminFilterChange(next)
+            }}
           >
-            <option value="all">全部旅程</option>
-            <option value="mine">包含我的旅程</option>
-            <option value="others">不包含我的旅程</option>
-          </select>
+            {adminFilter === 'all' ? '全部旅程' : adminFilter === 'mine' ? '包含我的旅程' : '不包含我的旅程'}
+            <FontAwesomeIcon icon={faRepeat} className="filter-title-icon" />
+          </h1>
         ) : (
           <h1>旅程</h1>
         )}
