@@ -17,7 +17,7 @@ function AppContent() {
   })
   const [showSwitchUser, setShowSwitchUser] = useState(false)
 
-  // Not logged in
+  // Not logged in — only show register if no users exist yet
   if (!state.auth.currentUser) {
     if (authPage === 'register') {
       return <Register onSwitchToLogin={() => setAuthPage('login')} />
@@ -33,6 +33,7 @@ function AppContent() {
           tripId={selectedTripId}
           onBack={() => {
             setSelectedTripId(null)
+            setAuthPage('login')
             localStorage.removeItem('kk-coincat-route-trip')
           }}
         />
@@ -75,6 +76,7 @@ function AppContent() {
       {showSwitchUser && <UserMenu onClose={() => setShowSwitchUser(false)} onSwitchUser={() => {
         setShowSwitchUser(false)
         setSelectedTripId(null)
+        setAuthPage('login')
         localStorage.removeItem('kk-coincat-route-trip')
       }} />}
     </div>
