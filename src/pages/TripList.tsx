@@ -5,6 +5,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faArchive, faBoxOpen } from '@fortawesome/free-solid-svg-icons'
 import { CreateTrip } from '../components/CreateTrip'
 
+type AdminFilter = 'all' | 'mine' | 'others'
+const ADMIN_FILTER_KEY = 'kk-coincat-admin-trip-filter'
+
+function getStoredAdminFilter(): AdminFilter {
+  const stored = localStorage.getItem(ADMIN_FILTER_KEY)
+  if (stored === 'all' || stored === 'mine' || stored === 'others') return stored
+  return 'all'
+}
+
 interface Props {
   onSelectTrip: (tripId: string) => void
 }
@@ -13,14 +22,26 @@ export function TripList({ onSelectTrip }: Props) {
   const { state, getUserName, getUserColor, getTripExpenses, isCurrentUserAdmin } = useApp()
   const [showCreate, setShowCreate] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
+  const admin = isCurrentUserAdmin() || !!localStorage.getItem('kk-coincat-admin-session')
+  const [adminFilter, setAdminFilter] = useState<AdminFilter>(getStoredAdminFilter)
 
   const currentUser = state.auth.currentUser
   if (!currentUser) return null
 
-  const admin = isCurrentUserAdmin() || !!localStorage.getItem('kk-coincat-admin-session')
-  const myTrips = admin ? state.trips : state.trips.filter((t) => t.members.includes(currentUser.id))
-  const activeTrips = myTrips.filter((t) => !t.archived)
-  const archivedTrips = myTrips.filter((t) => t.archived)
+  const handleAdminFilterChange = (filter: AdminFilter) => {
+    setAdminFilter(filter)
+    localStorage.setItem(ADMIN_FILTER_KEY, filter)
+  }
+
+  const filteredTrips = admin
+    ? adminFilter === 'mine'
+      ? state.trips.filter((t) => t.members.includes(currentUser.id))
+      : adminFilter === 'others'
+        ? state.trips.filter((t) => !t.members.includes(currentUser.id))
+        : state.trips
+    : state.trips.filter((t) => t.members.includes(currentUser.id))
+  const activeTrips = filteredTrips.filter((t) => !t.archived)
+  const archivedTrips = filteredTrips.filter((t) => t.archived)
   const displayTrips = showArchived ? archivedTrips : activeTrips
 
   const getMyBalance = (tripId: string, memberIds: string[]) => {
@@ -40,13 +61,27 @@ export function TripList({ onSelectTrip }: Props) {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>我的旅程</h1>
+        <h1>{admin ? '所有旅程' : '我的旅程'}</h1>
         {isCurrentUserAdmin() && (
           <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>
             <FontAwesomeIcon icon={faPlus} />
           </button>
         )}
       </div>
+
+      {admin && (
+        <div className="filter-bar">
+          {([['all', '全部'], ['mine', '包含我'], ['others', '不含我']] as const).map(([key, label]) => (
+            <button
+              key={key}
+              className={`btn btn-sm ${adminFilter === key ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => handleAdminFilterChange(key)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="filter-bar">
         <button
