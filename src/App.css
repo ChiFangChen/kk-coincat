@@ -49,6 +49,12 @@ html, body, #root {
 body {
   color: var(--color-foreground);
 }
+.svg-inline--fa {
+  margin-right: 0.25em;
+}
+.svg-inline--fa:last-child {
+  margin-right: 0;
+}
 
 /* App layout */
 .app {
@@ -665,6 +671,7 @@ body {
   font-size: 0.875rem;
   font-weight: 600;
   white-space: nowrap;
+  text-align: right;
 }
 .expense-converted {
   font-size: 0.75rem;
