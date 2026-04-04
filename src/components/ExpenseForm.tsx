@@ -193,12 +193,13 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
             <div className="form-group flex-1">
               <label>金額</label>
               <input
-                type="text"
-                inputMode="decimal"
-                pattern="[0-9]*\.?[0-9]*"
+                type="number"
+                inputMode="numeric"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
 
+                step="any"
+                min="0"
                 required
               />
               {submitAttempted && (!amount || parseFloat(amount) <= 0) && (
