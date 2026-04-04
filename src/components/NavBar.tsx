@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faReceipt, faCalculator, faCog } from '@fortawesome/free-solid-svg-icons'
+import { faReceipt, faCalculator, faCog, faUser } from '@fortawesome/free-solid-svg-icons'
 
-type Tab = 'expenses' | 'settlement' | 'settings'
+type Tab = 'expenses' | 'myExpenses' | 'settlement' | 'settings'
 
 interface Props {
   activeTab: Tab
@@ -11,6 +11,7 @@ interface Props {
 export function NavBar({ activeTab, onTabChange }: Props) {
   const tabs: { id: Tab; label: string; icon: typeof faReceipt }[] = [
     { id: 'expenses', label: '帳務', icon: faReceipt },
+    { id: 'myExpenses', label: '我的', icon: faUser },
     { id: 'settlement', label: '結算', icon: faCalculator },
     { id: 'settings', label: '設定', icon: faCog },
   ]

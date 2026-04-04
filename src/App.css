@@ -576,6 +576,38 @@ body {
   opacity: 0.25;
 }
 
+/* My Expenses Total */
+.my-expenses-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: var(--color-surface);
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+}
+.my-expenses-total-label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.my-expenses-total-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.my-expenses-total-value.positive {
+  color: var(--color-success);
+}
+.my-expenses-total-value.negative {
+  color: var(--color-danger);
+}
+.expense-amount.positive {
+  color: var(--color-success);
+}
+.expense-amount.negative {
+  color: var(--color-danger);
+}
+
 /* Search Bar */
 .search-bar {
   margin-bottom: 0.75rem;

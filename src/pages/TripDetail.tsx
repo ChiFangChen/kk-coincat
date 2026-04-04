@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext'
 import { NavBar } from '../components/NavBar'
 import { UserMenu } from '../components/UserMenu'
 import { TripExpenses } from './TripExpenses'
+import { TripMyExpenses } from './TripMyExpenses'
 import { TripSettlement } from './TripSettlement'
 import { TripSettings } from './TripSettings'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -15,7 +16,7 @@ interface Props {
 
 export function TripDetail({ tripId, onBack }: Props) {
   const { state, getTripMembers } = useApp()
-  const [activeTab, setActiveTab] = useState<'expenses' | 'settlement' | 'settings'>('expenses')
+  const [activeTab, setActiveTab] = useState<'expenses' | 'myExpenses' | 'settlement' | 'settings'>('expenses')
   const [showUserMenu, setShowUserMenu] = useState(false)
   const trip = state.trips.find((t) => t.id === tripId)
   if (!trip) {
@@ -54,6 +55,7 @@ export function TripDetail({ tripId, onBack }: Props) {
 
       <div className="app-content">
         {activeTab === 'expenses' && <TripExpenses trip={trip} members={members} />}
+        {activeTab === 'myExpenses' && <TripMyExpenses trip={trip} members={members} />}
         {activeTab === 'settlement' && <TripSettlement trip={trip} members={members} />}
         {activeTab === 'settings' && <TripSettings trip={trip} members={members} onBack={onBack} />}
       </div>
