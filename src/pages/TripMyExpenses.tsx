@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User } from '../types'
-import { calculateShares } from '../utils/settlement'
+import { calculateBalances, calculateShares } from '../utils/settlement'
 import { formatDate } from '../utils/date'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHandshake } from '@fortawesome/free-solid-svg-icons'
@@ -31,9 +31,12 @@ export function TripMyExpenses({ trip, members }: Props) {
       })
   }, [expenses, currentUser])
 
+  // Use the same rounded balance as settlement overview for consistency
   const total = useMemo(() => {
-    return Math.round(myItems.reduce((sum, item) => sum + item.delta, 0))
-  }, [myItems])
+    if (!currentUser) return 0
+    const balances = calculateBalances(expenses, trip.members, trip.primaryCurrency)
+    return balances[currentUser.id] || 0
+  }, [expenses, trip.members, trip.primaryCurrency, currentUser])
 
   const fmt = (iso: string) => formatDate(iso, trip.timezone)
 

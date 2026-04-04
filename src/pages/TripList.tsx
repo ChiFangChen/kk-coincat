@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
-import { calculateBalances } from '../utils/settlement'
+import { calculateBalances, settledThreshold } from '../utils/settlement'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faArchive, faBoxOpen, faRepeat } from '@fortawesome/free-solid-svg-icons'
 import { CreateTrip } from '../components/CreateTrip'
@@ -44,18 +44,19 @@ export function TripList({ onSelectTrip }: Props) {
   const archivedTrips = filteredTrips.filter((t) => t.archived)
   const displayTrips = showArchived ? archivedTrips : activeTrips
 
-  const getMyBalance = (tripId: string, memberIds: string[]) => {
+  const getMyBalance = (tripId: string, memberIds: string[], currency: string) => {
     const expenses = getTripExpenses(tripId)
     if (expenses.length === 0) return 0
-    const balances = calculateBalances(expenses, memberIds)
+    const balances = calculateBalances(expenses, memberIds, currency)
     return balances[currentUser.id] || 0
   }
 
-  const isFullySettled = (tripId: string, memberIds: string[]) => {
+  const isFullySettled = (tripId: string, memberIds: string[], currency: string) => {
     const expenses = getTripExpenses(tripId)
     if (expenses.length === 0) return false
-    const balances = calculateBalances(expenses, memberIds)
-    return Object.values(balances).every((b) => Math.abs(b) < 0.01)
+    const balances = calculateBalances(expenses, memberIds, currency)
+    const threshold = settledThreshold(currency)
+    return Object.values(balances).every((b) => Math.abs(b) < threshold)
   }
 
   return (
@@ -105,8 +106,8 @@ export function TripList({ onSelectTrip }: Props) {
       ) : (
         <div className="trip-list">
           {displayTrips.map((trip) => {
-            const balance = getMyBalance(trip.id, trip.members)
-            const settled = isFullySettled(trip.id, trip.members)
+            const balance = getMyBalance(trip.id, trip.members, trip.primaryCurrency)
+            const settled = isFullySettled(trip.id, trip.members, trip.primaryCurrency)
             const expenses = getTripExpenses(trip.id)
             return (
               <div

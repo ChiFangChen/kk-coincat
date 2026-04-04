@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User, SplitDetail } from '../types'
-import { calculateBalances, minimizeTransfers } from '../utils/settlement'
+import { calculateBalances, minimizeTransfers, settledThreshold } from '../utils/settlement'
 import { ExpenseForm } from '../components/ExpenseForm'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -27,8 +27,9 @@ export function TripSettlement({ trip, members }: Props) {
   } | null>(null)
 
   const expenses = getTripExpenses(trip.id)
-  const balances = calculateBalances(expenses, trip.members)
-  const transfers = minimizeTransfers(balances)
+  const threshold = settledThreshold(trip.primaryCurrency)
+  const balances = calculateBalances(expenses, trip.members, trip.primaryCurrency)
+  const transfers = minimizeTransfers(balances, threshold)
 
   const handleSettle = (from: string, to: string, amount: number) => {
     if (trip.archived) return
@@ -51,7 +52,7 @@ export function TripSettlement({ trip, members }: Props) {
     setShowCustomSettle(true)
   }
 
-  const allSettled = Object.values(balances).every((b) => Math.abs(b) < 0.01)
+  const allSettled = Object.values(balances).every((b) => Math.abs(b) < threshold)
 
   return (
     <div className="page">
@@ -68,10 +69,10 @@ export function TripSettlement({ trip, members }: Props) {
             return (
               <div key={m.id} className="balance-item">
                 <div className="balance-name">{m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} /></div>
-                <div className={`balance-amount ${balance > 0.01 ? 'positive' : balance < -0.01 ? 'negative' : ''}`}>
-                  {balance > 0.01
+                <div className={`balance-amount ${balance > threshold ? 'positive' : balance < -threshold ? 'negative' : ''}`}>
+                  {balance > threshold
                     ? `+${balance.toFixed(0)}`
-                    : balance < -0.01
+                    : balance < -threshold
                       ? `${balance.toFixed(0)}`
                       : '0'}
                   <span className="balance-currency">{trip.primaryCurrency}</span>
