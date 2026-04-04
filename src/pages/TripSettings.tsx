@@ -57,7 +57,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const handleRemoveMember = (userId: string) => {
     if (trip.members.length <= 1) return
     const updated = { ...trip, members: trip.members.filter((id) => id !== userId) }
-    if (trip.managerId === userId) updated.managerId = undefined
+    if (trip.managerId === userId) updated.managerId = ''
     updateTrip(updated)
   }
 
@@ -295,7 +295,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
               {admin && !trip.archived && m.id !== state.auth.currentUser?.id && (
                 <button
                   className={`btn-icon${trip.managerId === m.id ? ' btn-manager-active' : ''}`}
-                  onClick={() => updateTrip({ ...trip, managerId: trip.managerId === m.id ? undefined : m.id })}
+                  onClick={() => updateTrip({ ...trip, managerId: trip.managerId === m.id ? '' : m.id })}
                   title={trip.managerId === m.id ? '取消負責人' : '指定為負責人'}
                 >
                   <FontAwesomeIcon icon={faStarSolid} />
