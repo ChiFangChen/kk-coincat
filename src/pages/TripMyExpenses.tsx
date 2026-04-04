@@ -82,7 +82,7 @@ export function TripMyExpenses({ trip, members }: Props) {
                     <div className="expense-date">
                       {fmt(expense.createdAt)}
                       {' · '}
-                      {expense.payer === currentUser.id ? '我付的' : getUserName(expense.payer) + '付的'}
+                      {expense.payer === currentUser.id ? '我付的' : getUserName(expense.payer) + ' 付的'}
                     </div>
                   </div>
                 </div>
