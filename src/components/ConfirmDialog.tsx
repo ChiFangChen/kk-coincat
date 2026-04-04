@@ -1,3 +1,5 @@
+import { createPortal } from 'react-dom'
+
 interface Props {
   title: string
   message: string
@@ -9,7 +11,7 @@ interface Props {
 }
 
 export function ConfirmDialog({ title, message, confirmText = '確認', cancelText = '取消', onConfirm, onCancel, danger }: Props) {
-  return (
+  return createPortal(
     <div className="dialog-overlay" onClick={onCancel}>
       <div className="dialog" onClick={(e) => e.stopPropagation()}>
         <div className="dialog-title">{title}</div>
@@ -19,6 +21,7 @@ export function ConfirmDialog({ title, message, confirmText = '確認', cancelTe
           <button className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`} onClick={onConfirm}>{confirmText}</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

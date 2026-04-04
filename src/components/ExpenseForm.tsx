@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useApp } from '../context/AppContext'
 import type { Trip, TripExpense, SplitMethod, SplitDetail, User } from '../types'
 import { loadExpensePrefs, saveExpensePrefs } from '../utils/storage'
@@ -145,7 +146,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
     amount: '自訂金額',
   }
 
-  return (
+  return createPortal(
     <div className="dialog-overlay dialog-fullscreen-overlay" onClick={onClose}>
       <div className="dialog dialog-fullscreen" onClick={(e) => e.stopPropagation()}>
         <div className="dialog-header">
@@ -325,6 +326,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
