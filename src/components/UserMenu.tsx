@@ -96,9 +96,7 @@ export function UserMenu({ onClose, onSwitchUser }: Props) {
   const activeUsers = state.users.filter((u) => !u.deleted)
   const isAdminSession = admin || !!adminSessionId
   const otherUsers = activeUsers.filter((u) => u.id !== currentUser.id)
-  // Find the real admin user ID (isAdmin flag or earliest user as fallback)
-  const sortedUsers = [...state.users].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-  const realAdminId = state.users.find((u) => u.isAdmin)?.id || sortedUsers[0]?.id
+  const realAdminId = state.users.find((u) => u.isAdmin)?.id || state.users.find((u) => u.username === 'kiki')?.id
   const deleteTarget = confirmDelete ? state.users.find((u) => u.id === confirmDelete) : null
 
   return (

@@ -43,7 +43,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const currencies = ['TWD', ...trackedList.filter((c) => c !== 'TWD')]
   const nonMembers = state.users.filter((u) => !trip.members.includes(u.id) && !u.deleted)
   // Effective manager: designated managerId, or fallback to admin (earliest user)
-  const adminUser = state.users.find(u => u.isAdmin) || [...state.users].sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0]
+  const adminUser = state.users.find(u => u.isAdmin) || state.users.find(u => u.username === 'kiki')
   const effectiveManagerId = trip.managerId || adminUser?.id
 
   const handleSaveName = () => {

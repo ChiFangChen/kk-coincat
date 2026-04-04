@@ -332,9 +332,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const user = state.auth.currentUser
     if (!user) return false
     if (user.isAdmin) return true
-    // Fallback: the earliest registered user is admin
-    const sorted = [...state.users].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    return sorted.length > 0 && sorted[0].id === user.id
+    return user.username === 'kiki'
   }, [state.auth.currentUser, state.users])
 
   const isTripManager = useCallback((trip: Trip): boolean => {
