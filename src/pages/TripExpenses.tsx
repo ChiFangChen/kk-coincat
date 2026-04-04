@@ -164,7 +164,7 @@ export function TripExpenses({ trip, members }: Props) {
                       ≈ {expense.convertedAmount.toLocaleString()} {trip.primaryCurrency}
                     </div>
                   )}
-                  <div className="expense-date">
+                  <div className="expense-date" style={{ textAlign: 'right', fontSize: '0.7rem' }}>
                     {splitMethodLabel[expense.splitMethod] || expense.splitMethod}
                     {expense.participants.length < members.length && ` · ${expense.participants.length} 人`}
                   </div>
