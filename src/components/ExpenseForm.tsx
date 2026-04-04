@@ -146,7 +146,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
   }
 
   return (
-    <div className="dialog-overlay" onClick={onClose}>
+    <div className="dialog-overlay dialog-fullscreen-overlay" onClick={onClose}>
       <div className="dialog dialog-fullscreen" onClick={(e) => e.stopPropagation()}>
         <div className="dialog-header">
           <h3>{editingExpense ? '編輯帳務' : '新增帳務'}</h3>

@@ -421,11 +421,15 @@ body {
   gap: 0.875rem;
 }
 .dialog.dialog-fullscreen {
-  max-height: calc(100dvh - 2rem);
-  height: calc(100dvh - 2rem);
+  max-height: 100dvh;
+  height: 100dvh;
   overflow: hidden;
   padding: 0;
-  border-radius: 0.75rem;
+  border-radius: 0;
+  max-width: 100%;
+}
+.dialog-fullscreen-overlay {
+  padding: 0;
 }
 .dialog-header {
   flex-shrink: 0;
