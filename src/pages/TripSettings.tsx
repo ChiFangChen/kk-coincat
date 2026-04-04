@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User } from '../types'
 import { fetchExchangeRates } from '../utils/currency'
-import { formatDate } from '../utils/date'
+import { formatDate, formatTimezoneLabel } from '../utils/date'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSync, faArchive, faBoxOpen, faUserPlus, faTrash, faPlus, faCheck, faTimes, faStar as faStarSolid } from '@fortawesome/free-solid-svg-icons'
@@ -171,16 +171,16 @@ export function TripSettings({ trip, members, onBack }: Props) {
               onChange={(e) => updateTrip({ ...trip, timezone: e.target.value })}
             >
               {timezoneList.length === 0 ? (
-                <option value={trip.timezone || 'Asia/Taipei'}>{trip.timezone || 'Asia/Taipei'}</option>
+                <option value={trip.timezone || 'Asia/Taipei'}>{formatTimezoneLabel(trip.timezone || 'Asia/Taipei')}</option>
               ) : (
                 timezoneList.map((tz) => (
-                  <option key={tz} value={tz}>{tz}</option>
+                  <option key={tz} value={tz}>{formatTimezoneLabel(tz)}</option>
                 ))
               )}
             </select>
           </div>
         ) : (
-          <div className="settings-value">{trip.timezone || 'Asia/Taipei'}</div>
+          <div className="settings-value">{formatTimezoneLabel(trip.timezone || 'Asia/Taipei')}</div>
         )}
       </div>
 
