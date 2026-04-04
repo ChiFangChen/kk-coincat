@@ -583,9 +583,7 @@ body {
   align-items: center;
   padding: 1rem;
   margin-bottom: 1rem;
-  background: var(--color-surface);
-  border-radius: 0.75rem;
-  border: 1px solid var(--color-border);
+  background: none;
 }
 .my-expenses-total-label {
   font-size: 1rem;
