@@ -49,7 +49,7 @@ export function localDatetimeToISO(datetimeLocal: string, timezone: string): str
 
 /** Get display label for timezone, e.g. "Asia/Taipei (UTC+8)" */
 export function formatTimezoneLabel(tz: string): string {
-  const offset = getTzOffsetMinutes(new Date(), tz)
+  const offset = Math.round(getTzOffsetMinutes(new Date(), tz))
   const h = Math.floor(Math.abs(offset) / 60)
   const m = Math.abs(offset) % 60
   const sign = offset >= 0 ? '+' : '-'
