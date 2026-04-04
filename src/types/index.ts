@@ -72,5 +72,6 @@ export interface AppState {
   trips: Trip[]
   expenses: TripExpense[]
   exchangeRates: Record<string, number>
+  timezones: string[]
   settings: LocalSettings
 }

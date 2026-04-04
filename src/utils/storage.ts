@@ -16,6 +16,7 @@ export const defaultState: AppState = {
   trips: [],
   expenses: [],
   exchangeRates: {},
+  timezones: [],
   settings: defaultSettings,
 }
 

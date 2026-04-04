@@ -136,3 +136,20 @@ export async function syncExchangeRates(db: Firestore, rates: Record<string, num
     await setDoc(ref, { exchangeRates: rates })
   }
 }
+
+// --- Timezones ---
+
+export function subscribeToTimezones(
+  db: Firestore,
+  callback: (timezones: string[]) => void
+): () => void {
+  return onSnapshot(doc(db, 'app', 'timezones'), (snapshot) => {
+    if (snapshot.exists()) {
+      callback(snapshot.data().list || [])
+    }
+  })
+}
+
+export async function syncTimezones(db: Firestore, timezones: string[]): Promise<void> {
+  await setDoc(doc(db, 'app', 'timezones'), { list: timezones })
+}

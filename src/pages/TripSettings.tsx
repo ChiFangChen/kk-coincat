@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User } from '../types'
 import { fetchExchangeRates } from '../utils/currency'
-import { formatDate, fetchTimezones } from '../utils/date'
+import { formatDate } from '../utils/date'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSync, faArchive, faBoxOpen, faUserPlus, faTrash, faPlus, faCheck, faTimes, faStar as faStarSolid } from '@fortawesome/free-solid-svg-icons'
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function TripSettings({ trip, members, onBack }: Props) {
-  const { state, updateTrip, deleteTrip, updateExchangeRates, isCurrentUserAdmin, isTripManager } = useApp()
+  const { state, updateTrip, deleteTrip, updateExchangeRates, isCurrentUserAdmin, isTripManager, fetchAndStoreTimezones } = useApp()
   const admin = isCurrentUserAdmin()
   const manager = isTripManager(trip)
   const canEdit = admin || manager
@@ -31,8 +31,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const [allRates, setAllRates] = useState<Record<string, number>>({})
   const [editingRate, setEditingRate] = useState<string | null>(null)
   const [editingRateValue, setEditingRateValue] = useState('')
-  const [timezoneList, setTimezoneList] = useState<string[]>([])
-  const [tzLoading, setTzLoading] = useState(false)
+  const timezoneList = state.timezones
 
   const TRACKED_KEY = `kk-coincat-tracked-currencies-${trip.id}`
   const [trackedList, setTrackedList] = useState<string[]>(() => {
@@ -168,14 +167,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
           <div className="form-group">
             <select
               value={trip.timezone || 'Asia/Taipei'}
-              onFocus={async () => {
-                if (timezoneList.length === 0 && !tzLoading) {
-                  setTzLoading(true)
-                  const list = await fetchTimezones()
-                  setTimezoneList(list)
-                  setTzLoading(false)
-                }
-              }}
+              onFocus={() => fetchAndStoreTimezones()}
               onChange={(e) => updateTrip({ ...trip, timezone: e.target.value })}
             >
               {timezoneList.length === 0 ? (
