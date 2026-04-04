@@ -22,6 +22,7 @@ export interface Trip {
   members: string[] // user IDs
   creator: string // user ID
   managerId?: string // user ID — designated trip manager (one per trip, set by admin)
+  timezone: string // IANA timezone e.g. "Asia/Taipei"
   archived: boolean
   createdAt: string
   updatedAt: string

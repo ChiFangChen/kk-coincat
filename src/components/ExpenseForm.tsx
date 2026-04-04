@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useApp } from '../context/AppContext'
 import type { Trip, TripExpense, SplitMethod, SplitDetail, User } from '../types'
 import { loadExpensePrefs, saveExpensePrefs } from '../utils/storage'
+import { localDatetimeToISO } from '../utils/date'
 
 interface Props {
   trip: Trip
@@ -34,9 +35,21 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
   const [splitDetails, setSplitDetails] = useState<SplitDetail[]>(
     editingExpense?.splitDetails || members.map((m) => ({ userId: m.id, value: 0 }))
   )
+  // Convert ISO to datetime-local value in trip timezone
+  const toLocalDatetime = useMemo(() => (iso: string) => {
+    const d = new Date(iso)
+    const parts = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: trip.timezone || 'Asia/Taipei',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(d)
+    const get = (type: string) => parts.find(p => p.type === type)?.value || ''
+    return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`
+  }, [trip.timezone])
+
   const [datetime, setDatetime] = useState(() => {
-    if (editingExpense) return editingExpense.createdAt.slice(0, 16)
-    return new Date().toISOString().slice(0, 16)
+    if (editingExpense) return toLocalDatetime(editingExpense.createdAt)
+    return toLocalDatetime(new Date().toISOString())
   })
   const [isSettlement] = useState(editingExpense?.isSettlement || false)
 
@@ -123,7 +136,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
       participants: finalParticipants,
       splitDetails: finalSplits,
       isSettlement,
-      createdAt: new Date(datetime).toISOString(),
+      createdAt: localDatetimeToISO(datetime, trip.timezone || 'Asia/Taipei'),
     }
 
     if (editingExpense) {

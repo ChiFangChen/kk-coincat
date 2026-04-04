@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User } from '../types'
 import { fetchExchangeRates } from '../utils/currency'
+import { formatDate, fetchTimezones } from '../utils/date'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSync, faArchive, faBoxOpen, faUserPlus, faTrash, faPlus, faCheck, faTimes, faStar as faStarSolid } from '@fortawesome/free-solid-svg-icons'
@@ -30,6 +31,8 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const [allRates, setAllRates] = useState<Record<string, number>>({})
   const [editingRate, setEditingRate] = useState<string | null>(null)
   const [editingRateValue, setEditingRateValue] = useState('')
+  const [timezoneList, setTimezoneList] = useState<string[]>([])
+  const [tzLoading, setTzLoading] = useState(false)
 
   const TRACKED_KEY = `kk-coincat-tracked-currencies-${trip.id}`
   const [trackedList, setTrackedList] = useState<string[]>(() => {
@@ -158,6 +161,37 @@ export function TripSettings({ trip, members, onBack }: Props) {
         )}
       </div>
 
+      {/* Timezone */}
+      <div className="settings-section">
+        <h2>時區</h2>
+        {canEdit && !trip.archived ? (
+          <div className="form-group">
+            <select
+              value={trip.timezone || 'Asia/Taipei'}
+              onFocus={async () => {
+                if (timezoneList.length === 0 && !tzLoading) {
+                  setTzLoading(true)
+                  const list = await fetchTimezones()
+                  setTimezoneList(list)
+                  setTzLoading(false)
+                }
+              }}
+              onChange={(e) => updateTrip({ ...trip, timezone: e.target.value })}
+            >
+              {timezoneList.length === 0 ? (
+                <option value={trip.timezone || 'Asia/Taipei'}>{trip.timezone || 'Asia/Taipei'}</option>
+              ) : (
+                timezoneList.map((tz) => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))
+              )}
+            </select>
+          </div>
+        ) : (
+          <div className="settings-value">{trip.timezone || 'Asia/Taipei'}</div>
+        )}
+      </div>
+
       {/* Exchange rates */}
       {canEdit && <div className="settings-section">
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -173,7 +207,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
           </button>
           {lastSynced && (
             <span className="settings-hint" style={{ margin: 0, marginLeft: 'auto', opacity: 0.7 }}>
-              同步於 {new Date(lastSynced).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              同步於 {formatDate(lastSynced, trip.timezone)}
             </span>
           )}
         </div>

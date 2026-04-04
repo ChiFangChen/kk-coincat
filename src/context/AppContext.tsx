@@ -56,7 +56,7 @@ function reducer(state: AppState, action: Action): AppState {
           : state.auth,
       }
     case 'SET_TRIPS':
-      return { ...state, trips: action.trips }
+      return { ...state, trips: action.trips.map(t => ({ ...t, timezone: t.timezone || 'Asia/Taipei' })) }
     case 'ADD_TRIP':
       return { ...state, trips: [action.trip, ...state.trips] }
     case 'UPDATE_TRIP':
@@ -209,6 +209,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       primaryCurrency,
       members: memberIds,
       creator: state.auth.currentUser.id,
+      timezone: 'Asia/Taipei',
       archived: false,
       createdAt: now,
       updatedAt: now,
@@ -248,7 +249,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id: generateId(),
       convertedAmount,
       exchangeRate,
-      createdAt: now,
+      createdAt: data.createdAt || now,
       updatedAt: now,
     }
     dispatch({ type: 'ADD_EXPENSE', expense })

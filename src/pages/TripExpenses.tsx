@@ -5,6 +5,7 @@ import { ExpenseForm } from '../components/ExpenseForm'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPen, faHandshake } from '@fortawesome/free-solid-svg-icons'
+import { formatDate } from '../utils/date'
 
 interface Props {
   trip: Trip
@@ -67,12 +68,7 @@ export function TripExpenses({ trip, members }: Props) {
     }
   }
 
-  const formatDate = (iso: string) => {
-    const d = new Date(iso)
-    return d.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' }) +
-      ' ' +
-      d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
-  }
+  const fmt = (iso: string) => formatDate(iso, trip.timezone)
 
   const splitMethodLabel: Record<string, string> = {
     equal: '均分',
@@ -154,7 +150,7 @@ export function TripExpenses({ trip, members }: Props) {
                     {expense.item}
                   </div>
                   <div className="expense-date">
-                    {formatDate(expense.createdAt)}
+                    {fmt(expense.createdAt)}
                     {' · '}
                     {splitMethodLabel[expense.splitMethod] || expense.splitMethod}
                     {expense.participants.length < members.length && ` · ${expense.participants.length}人`}
