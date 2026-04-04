@@ -119,6 +119,7 @@ interface AppContextValue {
   getTripExpenses: (tripId: string) => TripExpense[]
   getTripMembers: (trip: Trip) => User[]
   isCurrentUserAdmin: () => boolean
+  isTripManager: (trip: Trip) => boolean
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -316,6 +317,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return sorted.length > 0 && sorted[0].id === user.id
   }, [state.auth.currentUser, state.users])
 
+  const isTripManager = useCallback((trip: Trip): boolean => {
+    const user = state.auth.currentUser
+    if (!user) return false
+    return trip.managerId === user.id && trip.members.includes(user.id)
+  }, [state.auth.currentUser])
+
   return (
     <AppContext.Provider
       value={{
@@ -338,6 +345,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         getTripExpenses,
         getTripMembers,
         isCurrentUserAdmin,
+        isTripManager,
       }}
     >
       {children}

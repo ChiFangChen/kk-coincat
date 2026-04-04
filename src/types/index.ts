@@ -21,6 +21,7 @@ export interface Trip {
   primaryCurrency: string
   members: string[] // user IDs
   creator: string // user ID
+  managerId?: string // user ID — designated trip manager (one per trip, set by admin)
   archived: boolean
   createdAt: string
   updatedAt: string
