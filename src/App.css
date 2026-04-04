@@ -1001,6 +1001,29 @@ body {
 .settings-value {
   font-size: 1rem;
 }
+.tz-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  z-index: 10;
+  margin-top: 0.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.tz-dropdown-item {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--color-card-foreground);
+}
+.tz-dropdown-item:hover, .tz-dropdown-item.active {
+  background: var(--color-muted);
+}
 .rate-header {
   display: flex;
   align-items: center;

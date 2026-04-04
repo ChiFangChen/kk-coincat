@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User } from '../types'
 import { formatDate, formatTimezoneLabel, getTimezones } from '../utils/date'
@@ -32,6 +32,13 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const [editingRate, setEditingRate] = useState<string | null>(null)
   const [editingRateValue, setEditingRateValue] = useState('')
   const timezoneList = getTimezones()
+  const [tzSearch, setTzSearch] = useState('')
+  const [tzOpen, setTzOpen] = useState(false)
+  const filteredTimezones = useMemo(() => {
+    if (!tzSearch) return timezoneList
+    const q = tzSearch.toLowerCase()
+    return timezoneList.filter((tz) => tz.toLowerCase().includes(q) || formatTimezoneLabel(tz).toLowerCase().includes(q))
+  }, [tzSearch, timezoneList])
 
   const trackedList = trip.trackedCurrencies || []
 
@@ -142,15 +149,37 @@ export function TripSettings({ trip, members, onBack }: Props) {
       <div className="settings-section">
         <h2>時區</h2>
         {canEdit && !trip.archived ? (
-          <div className="form-group">
-            <select
-              value={trip.timezone || 'Asia/Taipei'}
-              onChange={(e) => updateTrip(trip.id, { timezone: e.target.value })}
-            >
-              {timezoneList.map((tz) => (
-                <option key={tz} value={tz}>{formatTimezoneLabel(tz)}</option>
-              ))}
-            </select>
+          <div className="form-group" style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={tzOpen ? tzSearch : formatTimezoneLabel(trip.timezone || 'Asia/Taipei')}
+              placeholder="搜尋時區..."
+              onFocus={() => { setTzOpen(true); setTzSearch('') }}
+              onBlur={() => setTimeout(() => setTzOpen(false), 200)}
+              onChange={(e) => setTzSearch(e.target.value)}
+            />
+            {tzOpen && (
+              <div className="tz-dropdown">
+                {filteredTimezones.slice(0, 20).map((tz) => (
+                  <div
+                    key={tz}
+                    className={`tz-dropdown-item${tz === (trip.timezone || 'Asia/Taipei') ? ' active' : ''}`}
+                    onMouseDown={() => {
+                      updateTrip(trip.id, { timezone: tz })
+                      setTzOpen(false)
+                    }}
+                  >
+                    {formatTimezoneLabel(tz)}
+                  </div>
+                ))}
+                {filteredTimezones.length === 0 && (
+                  <div className="tz-dropdown-item" style={{ opacity: 0.5 }}>找不到符合的時區</div>
+                )}
+                {filteredTimezones.length > 20 && (
+                  <div className="tz-dropdown-item" style={{ opacity: 0.5 }}>輸入更多字以縮小範圍...</div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="settings-value">{formatTimezoneLabel(trip.timezone || 'Asia/Taipei')}</div>
