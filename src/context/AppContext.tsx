@@ -60,7 +60,7 @@ function reducer(state: AppState, action: Action): AppState {
           : state.auth,
       }
     case 'SET_TRIPS':
-      return { ...state, trips: action.trips.map(t => ({ ...t, timezone: t.timezone || 'Asia/Taipei' })) }
+      return { ...state, trips: action.trips.map(t => ({ ...t, timezone: t.timezone || 'Asia/Taipei', trackedCurrencies: t.trackedCurrencies || [] })) }
     case 'ADD_TRIP':
       return { ...state, trips: [action.trip, ...state.trips] }
     case 'UPDATE_TRIP':
@@ -219,6 +219,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       members: memberIds,
       creator: state.auth.currentUser.id,
       timezone: 'Asia/Taipei',
+      trackedCurrencies: [],
       archived: false,
       createdAt: now,
       updatedAt: now,
@@ -299,10 +300,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const fetchAndStoreTimezones = useCallback(async () => {
-    if (state.timezones.length > 0) return
+    if (state.timezones.length > 100) return
     const list = await fetchTimezones()
-    dispatch({ type: 'SET_TIMEZONES', timezones: list })
-    if (dbRef.current) syncTimezones(dbRef.current, list)
+    if (list.length > state.timezones.length) {
+      dispatch({ type: 'SET_TIMEZONES', timezones: list })
+      if (dbRef.current) syncTimezones(dbRef.current, list)
+    }
   }, [state.timezones])
 
   const getUserName = useCallback((userId: string): string => {

@@ -5,7 +5,7 @@ import { fetchExchangeRates } from '../utils/currency'
 import { formatDate, formatTimezoneLabel } from '../utils/date'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSync, faArchive, faBoxOpen, faUserPlus, faTrash, faPlus, faCheck, faTimes, faStar as faStarSolid } from '@fortawesome/free-solid-svg-icons'
+import { faSync, faArchive, faBoxOpen, faUserPlus, faTrash, faPlus, faCheck, faTimes, faStar as faStarSolid, faShareNodes, faUserMinus } from '@fortawesome/free-solid-svg-icons'
 
 interface Props {
   trip: Trip
@@ -24,6 +24,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const [confirmRemoveMember, setConfirmRemoveMember] = useState<string | null>(null)
   const [confirmRemoveCurrency, setConfirmRemoveCurrency] = useState<string | null>(null)
   const [confirmDeleteTrip, setConfirmDeleteTrip] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
   const [fetchingRates, setFetchingRates] = useState(false)
   const [ratesError, setRatesError] = useState('')
   const [showAddCurrency, setShowAddCurrency] = useState(false)
@@ -33,15 +34,10 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const [editingRateValue, setEditingRateValue] = useState('')
   const timezoneList = state.timezones
 
-  const TRACKED_KEY = `kk-coincat-tracked-currencies-${trip.id}`
-  const [trackedList, setTrackedList] = useState<string[]>(() => {
-    const saved = localStorage.getItem(TRACKED_KEY)
-    return saved ? JSON.parse(saved) : []
-  })
+  const trackedList = trip.trackedCurrencies || []
 
   const saveTrackedList = (list: string[]) => {
-    setTrackedList(list)
-    localStorage.setItem(TRACKED_KEY, JSON.stringify(list))
+    updateTrip({ ...trip, trackedCurrencies: list })
   }
 
   const currencies = ['TWD', ...trackedList.filter((c) => c !== 'TWD')]
@@ -71,10 +67,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
     if (!trip.archived) onBack()
   }
 
-  const RATES_SYNC_KEY = 'kk-coincat-rates-synced'
-  const [lastSynced, setLastSynced] = useState<string | null>(
-    localStorage.getItem(RATES_SYNC_KEY)
-  )
+  const lastSynced = trip.ratesSyncedAt || null
 
   const handleFetchRates = async () => {
     setFetchingRates(true)
@@ -84,8 +77,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
       // Update all rate values without changing the tracked list
       updateExchangeRates({ ...state.exchangeRates, ...rates })
       const now = new Date().toISOString()
-      localStorage.setItem(RATES_SYNC_KEY, now)
-      setLastSynced(now)
+      updateTrip({ ...trip, ratesSyncedAt: now })
       setAllRates(rates)
     } catch {
       setRatesError('同步失敗，請稍後再試')
@@ -300,7 +292,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
               <span className="member-row-name">{m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} /></span>
               {m.id === state.auth.currentUser?.id && <span className="you-tag">你</span>}
               {trip.managerId === m.id && <span className="manager-tag">負責人</span>}
-              {admin && !trip.archived && (
+              {admin && !trip.archived && !m.isAdmin && (
                 <button
                   className={`btn-icon${trip.managerId === m.id ? ' btn-manager-active' : ''}`}
                   onClick={() => updateTrip({ ...trip, managerId: trip.managerId === m.id ? undefined : m.id })}
@@ -314,12 +306,33 @@ export function TripSettings({ trip, members, onBack }: Props) {
                   className="btn-icon btn-delete"
                   onClick={() => setConfirmRemoveMember(m.id)}
                 >
-                  <FontAwesomeIcon icon={faTrash} />
+                  <FontAwesomeIcon icon={faUserMinus} />
                 </button>
               )}
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Share */}
+      <div className="settings-section">
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <h2 style={{ margin: 0 }}>邀請連結</h2>
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={() => {
+              const url = `${window.location.origin}${import.meta.env.BASE_URL}?join=${trip.id}`
+              navigator.clipboard.writeText(url)
+              setShareCopied(true)
+              setTimeout(() => setShareCopied(false), 2000)
+            }}
+            style={{ marginLeft: 'auto' }}
+          >
+            <FontAwesomeIcon icon={faShareNodes} />
+            <span>{shareCopied ? '已複製！' : '複製連結'}</span>
+          </button>
+        </div>
+        <p className="settings-hint">分享此連結給朋友，對方登入後即可加入旅程</p>
       </div>
 
       {/* Archive */}
