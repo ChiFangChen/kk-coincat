@@ -21,7 +21,7 @@ export interface Trip {
   primaryCurrency: string
   members: string[] // user IDs
   creator: string // user ID
-  managerId?: string // user ID — designated trip manager (one per trip, set by admin)
+  managerId?: string | null // user ID — designated trip manager (one per trip, set by admin)
   timezone: string // IANA timezone e.g. "Asia/Taipei"
   trackedCurrencies: string[] // currency codes tracked for this trip
   ratesSyncedAt?: string // ISO timestamp of last exchange rate sync
