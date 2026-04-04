@@ -60,7 +60,7 @@ export function TripMyExpenses({ trip, members }: Props) {
       ) : (
         <div className="expense-list">
           {myItems.map(({ expense, delta }) => {
-            const roundedDelta = Math.round(delta)
+            const roundedDelta = Math.round(delta * 10) / 10
             return (
               <div
                 key={expense.id}
