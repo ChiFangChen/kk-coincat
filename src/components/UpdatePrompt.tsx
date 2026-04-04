@@ -1,3 +1,4 @@
+/// <reference types="vite-plugin-pwa/react" />
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
 export function UpdatePrompt() {
