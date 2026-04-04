@@ -63,11 +63,11 @@ export function TripSettlement({ trip, members }: Props) {
       <div className="card" style={{ marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>餘額總覽</h2>
         <div className="balance-list">
-          {trip.members.map((id) => {
-            const balance = balances[id] || 0
+          {members.map((m) => {
+            const balance = balances[m.id] || 0
             return (
-              <div key={id} className="balance-item">
-                <div className="balance-name">{getUserName(id)}<span className="color-dot" style={{ backgroundColor: getUserColor(id) }} /></div>
+              <div key={m.id} className="balance-item">
+                <div className="balance-name">{m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} /></div>
                 <div className={`balance-amount ${balance > 0.01 ? 'positive' : balance < -0.01 ? 'negative' : ''}`}>
                   {balance > 0.01
                     ? `+${balance.toFixed(0)}`

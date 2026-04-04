@@ -131,12 +131,16 @@ export function TripList({ onSelectTrip }: Props) {
                   <span>{expenses.length} 筆</span>
                 </div>
                 <div className="trip-card-members">
-                  {trip.members.map((id) => (
-                    <span key={id} className="trip-member-tag">
-                      {getUserName(id)}
-                      <span className="color-dot" style={{ backgroundColor: getUserColor(id) }} />
-                    </span>
-                  ))}
+                  {(() => {
+                    const adminId = state.users.find(u => (u.isAdmin || u.username === 'kiki') && trip.members.includes(u.id))?.id
+                    const sorted = adminId ? [adminId, ...trip.members.filter(id => id !== adminId)] : trip.members
+                    return sorted.map((id) => (
+                      <span key={id} className="trip-member-tag">
+                        {getUserName(id)}
+                        <span className="color-dot" style={{ backgroundColor: getUserColor(id) }} />
+                      </span>
+                    ))
+                  })()}
                 </div>
               </div>
             )

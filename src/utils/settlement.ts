@@ -103,7 +103,7 @@ export function minimizeTransfers(balances: Record<string, number>): TransferSug
       transfers.push({
         from: debtors[i].userId,
         to: creditors[j].userId,
-        amount: Math.round(transferAmount * 100) / 100,
+        amount: Math.round(transferAmount),
       })
     }
 

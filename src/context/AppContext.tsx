@@ -322,9 +322,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [state.expenses])
 
   const getTripMembers = useCallback((trip: Trip): User[] => {
-    return trip.members
+    const members = trip.members
       .map((id) => state.users.find((u) => u.id === id))
       .filter((u): u is User => u !== undefined)
+    // Admin always first
+    members.sort((a, b) => {
+      const aAdmin = a.isAdmin || a.username === 'kiki'
+      const bAdmin = b.isAdmin || b.username === 'kiki'
+      if (aAdmin && !bAdmin) return -1
+      if (!aAdmin && bAdmin) return 1
+      return 0
+    })
+    return members
   }, [state.users])
 
   const isCurrentUserAdmin = useCallback((): boolean => {
