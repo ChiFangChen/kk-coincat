@@ -708,10 +708,6 @@ body {
   border-radius: var(--radius-lg);
   padding: 0.75rem;
   cursor: pointer;
-  transition: background-color 0.15s;
-}
-.expense-item:hover {
-  background-color: var(--color-muted);
 }
 .expense-item.settlement-item {
   border-left: 3px solid var(--color-success);
