@@ -166,7 +166,7 @@ export function TripExpenses({ trip, members }: Props) {
                   )}
                   <div className="expense-date">
                     {splitMethodLabel[expense.splitMethod] || expense.splitMethod}
-                    {expense.participants.length < members.length && ` · ${expense.participants.length}人`}
+                    {expense.participants.length < members.length && ` · ${expense.participants.length} 人`}
                   </div>
                 </div>
                 {!trip.archived && (
