@@ -291,7 +291,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
               <div className="payer-badge" style={m.color ? { backgroundColor: m.color } : undefined}>{m.displayName.charAt(0).toUpperCase()}</div>
               <span className="member-row-name">{m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} /></span>
               {m.id === state.auth.currentUser?.id && <span className="you-tag">你</span>}
-              {trip.managerId === m.id && <span className="manager-tag">負責人</span>}
+              {(trip.managerId ? trip.managerId === m.id : m.isAdmin) && <span className="manager-tag">負責人</span>}
               {admin && !trip.archived && m.id !== state.auth.currentUser?.id && (
                 <button
                   className={`btn-icon${trip.managerId === m.id ? ' btn-manager-active' : ''}`}

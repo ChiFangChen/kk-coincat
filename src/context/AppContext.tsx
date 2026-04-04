@@ -340,7 +340,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const isTripManager = useCallback((trip: Trip): boolean => {
     const user = state.auth.currentUser
     if (!user) return false
-    return trip.managerId === user.id && trip.members.includes(user.id)
+    if (trip.managerId) return trip.managerId === user.id && trip.members.includes(user.id)
+    return false
   }, [state.auth.currentUser])
 
   return (
