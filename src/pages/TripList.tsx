@@ -121,7 +121,7 @@ export function TripList({ onSelectTrip }: Props) {
                   )}
                   {expenses.length > 0 && !settled && (
                     <span className={`trip-card-balance ${balance >= 0 ? 'positive' : 'negative'}`}>
-                      {balance >= 0 ? `+${balance.toFixed(0)}` : balance.toFixed(0)}
+                      {balance >= 0 ? `+${balance.toFixed(0)}` : balance.toFixed(0)} {trip.primaryCurrency}
                     </span>
                   )}
                 </div>
