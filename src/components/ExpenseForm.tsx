@@ -194,6 +194,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
               <label>金額</label>
               <input
                 type="number"
+                inputMode="decimal"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
 
