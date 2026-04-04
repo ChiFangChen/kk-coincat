@@ -330,6 +330,9 @@ body {
   border-radius: var(--radius-md);
   display: inline-flex;
   align-items: center;
+  gap: 0.375rem;
+  display: inline-flex;
+  align-items: center;
   gap: 0;
 }
 .btn-icon {
