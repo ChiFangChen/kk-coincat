@@ -1,15 +1,13 @@
-/** Format ISO timestamp to "2026/5/14 8:53 AM" in the given timezone */
+/** Format ISO timestamp to "2026/2/18 4:40 AM" in the given timezone */
 export function formatDate(iso: string, timezone: string = 'Asia/Taipei'): string {
   const d = new Date(iso)
-  return d.toLocaleString('en-US', {
+  const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
+    year: 'numeric', month: 'numeric', day: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  }).formatToParts(d)
+  const get = (type: string) => parts.find(p => p.type === type)?.value || ''
+  return `${get('year')}/${get('month')}/${get('day')} ${get('hour')}:${get('minute')} ${get('dayPeriod')}`
 }
 
 /** Convert a datetime-local value (in trip timezone) back to ISO string */
