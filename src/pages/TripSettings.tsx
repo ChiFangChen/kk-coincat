@@ -329,7 +329,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
             style={{ marginLeft: 'auto' }}
           >
             <FontAwesomeIcon icon={faShareNodes} />
-            {shareCopied && <span>已複製！</span>}
+            {shareCopied && <span style={{ fontSize: '0.625rem', lineHeight: 1 }}>已複製！</span>}
           </button>
         </div>
         <p className="settings-hint">分享此連結給朋友，對方登入後即可加入旅程</p>
