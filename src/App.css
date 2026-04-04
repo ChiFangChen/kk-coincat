@@ -566,6 +566,9 @@ body {
   justify-content: center;
   font-weight: 600;
 }
+.btn-star {
+  padding: 0 !important;
+}
 .btn-manager-active {
   color: var(--color-warning);
 }

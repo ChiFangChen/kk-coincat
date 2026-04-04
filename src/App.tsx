@@ -50,7 +50,7 @@ function AppContent() {
       setJoinTripId(null)
       return
     }
-    updateTrip({ ...joinTrip, members: [...joinTrip.members, state.auth.currentUser.id] })
+    updateTrip(joinTrip.id, { members: [...joinTrip.members, state.auth.currentUser.id] })
     setJoinTripId(null)
     setSelectedTripId(joinTrip.id)
     localStorage.setItem('kk-coincat-route-trip', joinTrip.id)

@@ -87,6 +87,11 @@ export async function syncTrip(db: Firestore, trip: Trip): Promise<void> {
   await setDoc(doc(db, 'ccTrips', trip.id), trip, { merge: true })
 }
 
+export async function syncTripPartial(db: Firestore, tripId: string, fields: Record<string, unknown>): Promise<void> {
+  const { updateDoc } = await import('firebase/firestore')
+  await updateDoc(doc(db, 'ccTrips', tripId), fields)
+}
+
 export async function deleteTripFromFirestore(db: Firestore, id: string): Promise<void> {
   await deleteDoc(doc(db, 'ccTrips', id))
 }
@@ -116,25 +121,19 @@ export async function deleteTripExpenseFromFirestore(db: Firestore, id: string):
 
 export function subscribeToExchangeRates(
   db: Firestore,
-  callback: (rates: Record<string, number>) => void
+  callback: (rates: Record<string, number>, ratesSyncedAt: string | null) => void
 ): () => void {
   return onSnapshot(doc(db, 'app', 'settings'), (snapshot) => {
     if (snapshot.exists()) {
       const data = snapshot.data()
-      callback(data.exchangeRates || {})
+      callback(data.exchangeRates || {}, data.ratesSyncedAt || null)
     }
   })
 }
 
 export async function syncExchangeRates(db: Firestore, rates: Record<string, number>): Promise<void> {
-  const { getDoc } = await import('firebase/firestore')
   const ref = doc(db, 'app', 'settings')
-  const snapshot = await getDoc(ref)
-  if (snapshot.exists()) {
-    await setDoc(ref, { ...snapshot.data(), exchangeRates: rates }, { merge: true })
-  } else {
-    await setDoc(ref, { exchangeRates: rates })
-  }
+  await setDoc(ref, { exchangeRates: rates, ratesSyncedAt: new Date().toISOString() }, { merge: true })
 }
 
 // --- Timezones ---

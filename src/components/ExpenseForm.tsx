@@ -42,10 +42,11 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
   })
   const [isSettlement] = useState(editingExpense?.isSettlement || false)
 
-  // Available currencies: primary + tracked
+  // Available currencies: primary + tracked + editing expense's original currency
   const currencies = [
     'TWD',
     ...(trip.trackedCurrencies || []).filter((c) => c !== 'TWD'),
+    ...(editingExpense?.currency && editingExpense.currency !== 'TWD' && !(trip.trackedCurrencies || []).includes(editingExpense.currency) ? [editingExpense.currency] : []),
   ]
 
   // Update splitDetails when participants change

@@ -3,7 +3,7 @@ import type { AppState, User, Trip, TripExpense, LocalSettings } from '../types'
 import { USER_COLORS } from '../types'
 import { loadState, saveState, saveAuth } from '../utils/storage'
 import { generateId } from '../utils/id'
-import { convertToDefault } from '../utils/currency'
+import { convertToDefault, fetchExchangeRates } from '../utils/currency'
 import { fetchTimezones } from '../utils/date'
 import {
   initFirebase,
@@ -18,6 +18,7 @@ import {
   syncTripExpense,
   deleteTripExpenseFromFirestore,
   syncExchangeRates,
+  syncTripPartial,
   subscribeToTimezones,
   syncTimezones,
 } from '../utils/firebase'
@@ -29,13 +30,13 @@ type Action =
   | { type: 'UPDATE_USER'; user: User }
   | { type: 'SET_TRIPS'; trips: Trip[] }
   | { type: 'ADD_TRIP'; trip: Trip }
-  | { type: 'UPDATE_TRIP'; trip: Trip }
+  | { type: 'UPDATE_TRIP'; tripId: string; fields: Partial<Trip> }
   | { type: 'DELETE_TRIP'; id: string }
   | { type: 'SET_EXPENSES'; expenses: TripExpense[] }
   | { type: 'ADD_EXPENSE'; expense: TripExpense }
   | { type: 'UPDATE_EXPENSE'; expense: TripExpense }
   | { type: 'DELETE_EXPENSE'; id: string }
-  | { type: 'SET_EXCHANGE_RATES'; rates: Record<string, number> }
+  | { type: 'SET_EXCHANGE_RATES'; rates: Record<string, number>; ratesSyncedAt: string | null }
   | { type: 'SET_TIMEZONES'; timezones: string[] }
   | { type: 'UPDATE_SETTINGS'; settings: Partial<LocalSettings> }
   | { type: 'LOGIN'; user: User }
@@ -66,7 +67,7 @@ function reducer(state: AppState, action: Action): AppState {
     case 'UPDATE_TRIP':
       return {
         ...state,
-        trips: state.trips.map((t) => (t.id === action.trip.id ? { ...t, ...action.trip } : t)),
+        trips: state.trips.map((t) => (t.id === action.tripId ? { ...t, ...action.fields } : t)),
       }
     case 'DELETE_TRIP':
       return {
@@ -91,7 +92,7 @@ function reducer(state: AppState, action: Action): AppState {
         expenses: state.expenses.filter((e) => e.id !== action.id),
       }
     case 'SET_EXCHANGE_RATES':
-      return { ...state, exchangeRates: action.rates }
+      return { ...state, exchangeRates: action.rates, ratesSyncedAt: action.ratesSyncedAt ?? state.ratesSyncedAt }
     case 'SET_TIMEZONES':
       return { ...state, timezones: action.timezones }
     case 'UPDATE_SETTINGS':
@@ -113,7 +114,7 @@ interface AppContextValue {
   updateUser: (user: User) => void
   deleteUser: (id: string) => void
   addTrip: (name: string, primaryCurrency: string, memberIds: string[]) => void
-  updateTrip: (trip: Trip) => void
+  updateTrip: (tripId: string, fields: Partial<Omit<Trip, 'id'>>) => void
   deleteTrip: (id: string) => void
   addExpense: (data: Omit<TripExpense, 'id' | 'updatedAt' | 'convertedAmount' | 'exchangeRate'> & { currency: string }) => void
   updateExpense: (expense: TripExpense) => void
@@ -146,7 +147,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const unsub1 = subscribeToUsers(db, (users) => dispatch({ type: 'SET_USERS', users }))
         const unsub2 = subscribeToTrips(db, (trips) => dispatch({ type: 'SET_TRIPS', trips }))
         const unsub3 = subscribeToTripExpenses(db, (expenses) => dispatch({ type: 'SET_EXPENSES', expenses }))
-        const unsub4 = subscribeToExchangeRates(db, (rates) => dispatch({ type: 'SET_EXCHANGE_RATES', rates }))
+        const unsub4 = subscribeToExchangeRates(db, (rates, ratesSyncedAt) => dispatch({ type: 'SET_EXCHANGE_RATES', rates, ratesSyncedAt }))
         const unsub5 = subscribeToTimezones(db, (timezones) => dispatch({ type: 'SET_TIMEZONES', timezones }))
         return () => {
           unsub1()
@@ -159,6 +160,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [])
+
+  // Auto-fetch exchange rates if empty (one-time)
+  const autoFetchedRef = useRef(false)
+  useEffect(() => {
+    if (!autoFetchedRef.current && Object.keys(state.exchangeRates).length === 0 && firebaseListeningRef.current) {
+      autoFetchedRef.current = true
+      fetchExchangeRates('TWD').then(rates => {
+        if (Object.keys(rates).length > 0) {
+          const now = new Date().toISOString()
+          dispatch({ type: 'SET_EXCHANGE_RATES', rates, ratesSyncedAt: now })
+          if (dbRef.current) syncExchangeRates(dbRef.current, rates)
+        }
+      }).catch(() => {})
+    }
+  }, [state.exchangeRates])
 
   // Save to localStorage on state change
   useEffect(() => {
@@ -228,10 +244,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (dbRef.current) syncTrip(dbRef.current, trip)
   }, [state.auth.currentUser])
 
-  const updateTripAction = useCallback((trip: Trip) => {
-    const updated = { ...trip, updatedAt: new Date().toISOString() }
-    dispatch({ type: 'UPDATE_TRIP', trip: updated })
-    if (dbRef.current) syncTrip(dbRef.current, updated)
+  const updateTripAction = useCallback((tripId: string, fields: Partial<Omit<Trip, 'id'>>) => {
+    const updated = { ...fields, updatedAt: new Date().toISOString() }
+    dispatch({ type: 'UPDATE_TRIP', tripId, fields: updated })
+    if (dbRef.current) syncTripPartial(dbRef.current, tripId, updated)
   }, [])
 
   const deleteTripAction = useCallback((id: string) => {
@@ -291,7 +307,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const updateExchangeRates = useCallback((rates: Record<string, number>) => {
-    dispatch({ type: 'SET_EXCHANGE_RATES', rates })
+    const now = new Date().toISOString()
+    dispatch({ type: 'SET_EXCHANGE_RATES', rates, ratesSyncedAt: now })
     if (dbRef.current) syncExchangeRates(dbRef.current, rates)
   }, [])
 
