@@ -788,9 +788,10 @@ body {
   font-weight: 500;
 }
 .trip-card-balance {
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin-top: 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 .trip-card-balance.positive {
   color: var(--color-success);

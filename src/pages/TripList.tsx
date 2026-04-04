@@ -119,6 +119,11 @@ export function TripList({ onSelectTrip }: Props) {
                   {settled && expenses.length > 0 && (
                     <span className="trip-settled-badge">已結清</span>
                   )}
+                  {expenses.length > 0 && !settled && (
+                    <span className={`trip-card-balance ${balance >= 0 ? 'positive' : 'negative'}`}>
+                      {balance >= 0 ? `+${balance.toFixed(0)}` : balance.toFixed(0)}
+                    </span>
+                  )}
                 </div>
                 <div className="trip-card-meta">
                   <span>{trip.members.length} 人</span>
@@ -133,11 +138,6 @@ export function TripList({ onSelectTrip }: Props) {
                     </span>
                   ))}
                 </div>
-                {expenses.length > 0 && !settled && (
-                  <div className={`trip-card-balance ${balance >= 0 ? 'positive' : 'negative'}`}>
-                    {balance >= 0 ? `別人欠你 ${balance.toFixed(0)}` : `你欠別人 ${Math.abs(balance).toFixed(0)}`}
-                  </div>
-                )}
               </div>
             )
           })}
