@@ -152,10 +152,6 @@ export function TripExpenses({ trip, members }: Props) {
                   <div className="expense-date">
                     {fmt(expense.createdAt)}
                   </div>
-                  <div className="expense-date">
-                    {splitMethodLabel[expense.splitMethod] || expense.splitMethod}
-                    {expense.participants.length < members.length && ` · ${expense.participants.length}人`}
-                  </div>
                 </div>
               </div>
               <div className="expense-right">
@@ -168,6 +164,10 @@ export function TripExpenses({ trip, members }: Props) {
                       ≈ {expense.convertedAmount.toLocaleString()} {trip.primaryCurrency}
                     </div>
                   )}
+                  <div className="expense-date">
+                    {splitMethodLabel[expense.splitMethod] || expense.splitMethod}
+                    {expense.participants.length < members.length && ` · ${expense.participants.length}人`}
+                  </div>
                 </div>
                 {!trip.archived && (
                   <button
