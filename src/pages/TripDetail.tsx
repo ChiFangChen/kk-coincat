@@ -43,7 +43,7 @@ export function TripDetail({ tripId, onBack }: Props) {
   return (
     <div className="app">
       <div className="trip-header">
-        <button className="btn-icon" onClick={onBack}>
+        <button className="btn-icon" onClick={() => onBack()}>
           <FontAwesomeIcon icon={faArrowLeft} />
         </button>
         <h1 className="trip-header-title">{trip.name}</h1>

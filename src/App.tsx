@@ -7,6 +7,7 @@ import { TripList } from './pages/TripList'
 import { TripDetail } from './pages/TripDetail'
 import { UserMenu } from './components/UserMenu'
 import { ConfirmDialog } from './components/ConfirmDialog'
+import { UpdatePrompt } from './components/UpdatePrompt'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons'
 import './App.css'
@@ -180,6 +181,7 @@ function App() {
   return (
     <AppProvider>
       <AppContent />
+      <UpdatePrompt />
     </AppProvider>
   )
 }
