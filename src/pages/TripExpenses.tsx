@@ -160,9 +160,7 @@ export function TripExpenses({ trip, members }: Props) {
               <div className="expense-right">
                 <div>
                   <div className="expense-amount">
-                    {expense.currency === trip.primaryCurrency
-                      ? `${expense.amount.toLocaleString()}`
-                      : `${expense.amount.toLocaleString()} ${expense.currency}`}
+                    {expense.amount.toLocaleString()} {expense.currency}
                   </div>
                   {expense.currency !== trip.primaryCurrency && (
                     <div className="expense-converted">

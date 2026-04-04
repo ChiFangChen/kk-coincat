@@ -57,18 +57,11 @@ export function formatTimezoneLabel(tz: string): string {
   return `${tz} (UTC${offsetStr})`
 }
 
-let cachedTimezones: string[] | null = null
-
-/** Fetch IANA timezone list from worldtimeapi.org (cached, one call only) */
-export async function fetchTimezones(): Promise<string[]> {
-  if (cachedTimezones) return cachedTimezones
+/** Get full IANA timezone list from the browser's Intl API */
+export function getTimezones(): string[] {
   try {
-    const res = await fetch('https://worldtimeapi.org/api/timezone')
-    const data: string[] = await res.json()
-    cachedTimezones = data
-    return data
+    return Intl.supportedValuesOf('timeZone')
   } catch {
-    // Fallback common timezones
     return [
       'Asia/Taipei', 'Asia/Tokyo', 'Asia/Seoul', 'Asia/Shanghai',
       'Asia/Hong_Kong', 'Asia/Singapore', 'Asia/Bangkok',

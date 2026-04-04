@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User } from '../types'
-import { formatDate, formatTimezoneLabel } from '../utils/date'
+import { formatDate, formatTimezoneLabel, getTimezones } from '../utils/date'
 import { fetchExchangeRates } from '../utils/currency'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function TripSettings({ trip, members, onBack }: Props) {
-  const { state, updateTrip, deleteTrip, updateExchangeRates, isCurrentUserAdmin, isTripManager, fetchAndStoreTimezones } = useApp()
+  const { state, updateTrip, deleteTrip, updateExchangeRates, isCurrentUserAdmin, isTripManager } = useApp()
   const admin = isCurrentUserAdmin() || !!localStorage.getItem('kk-coincat-admin-session')
   const manager = isTripManager(trip)
   const canEdit = admin || manager
@@ -31,7 +31,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
   const [currencySearch, setCurrencySearch] = useState('')
   const [editingRate, setEditingRate] = useState<string | null>(null)
   const [editingRateValue, setEditingRateValue] = useState('')
-  const timezoneList = state.timezones
+  const timezoneList = getTimezones()
 
   const trackedList = trip.trackedCurrencies || []
 
@@ -145,16 +145,11 @@ export function TripSettings({ trip, members, onBack }: Props) {
           <div className="form-group">
             <select
               value={trip.timezone || 'Asia/Taipei'}
-              onFocus={() => fetchAndStoreTimezones()}
               onChange={(e) => updateTrip(trip.id, { timezone: e.target.value })}
             >
-              {timezoneList.length === 0 ? (
-                <option value={trip.timezone || 'Asia/Taipei'}>{formatTimezoneLabel(trip.timezone || 'Asia/Taipei')}</option>
-              ) : (
-                timezoneList.map((tz) => (
-                  <option key={tz} value={tz}>{formatTimezoneLabel(tz)}</option>
-                ))
-              )}
+              {timezoneList.map((tz) => (
+                <option key={tz} value={tz}>{formatTimezoneLabel(tz)}</option>
+              ))}
             </select>
           </div>
         ) : (

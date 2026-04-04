@@ -17,7 +17,6 @@ export const defaultState: AppState = {
   expenses: [],
   exchangeRates: {},
   ratesSyncedAt: null,
-  timezones: [],
   settings: defaultSettings,
 }
 

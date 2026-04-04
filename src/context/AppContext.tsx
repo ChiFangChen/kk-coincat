@@ -4,7 +4,6 @@ import { USER_COLORS } from '../types'
 import { loadState, saveState, saveAuth } from '../utils/storage'
 import { generateId } from '../utils/id'
 import { convertToDefault, fetchExchangeRates } from '../utils/currency'
-import { fetchTimezones } from '../utils/date'
 import {
   initFirebase,
   isFirebaseConfigured,
@@ -19,8 +18,6 @@ import {
   deleteTripExpenseFromFirestore,
   syncExchangeRates,
   syncTripPartial,
-  subscribeToTimezones,
-  syncTimezones,
 } from '../utils/firebase'
 import type { Firestore } from 'firebase/firestore'
 
@@ -37,7 +34,6 @@ type Action =
   | { type: 'UPDATE_EXPENSE'; expense: TripExpense }
   | { type: 'DELETE_EXPENSE'; id: string }
   | { type: 'SET_EXCHANGE_RATES'; rates: Record<string, number>; ratesSyncedAt: string | null }
-  | { type: 'SET_TIMEZONES'; timezones: string[] }
   | { type: 'UPDATE_SETTINGS'; settings: Partial<LocalSettings> }
   | { type: 'LOGIN'; user: User }
   | { type: 'LOGOUT' }
@@ -93,8 +89,6 @@ function reducer(state: AppState, action: Action): AppState {
       }
     case 'SET_EXCHANGE_RATES':
       return { ...state, exchangeRates: action.rates, ratesSyncedAt: action.ratesSyncedAt ?? state.ratesSyncedAt }
-    case 'SET_TIMEZONES':
-      return { ...state, timezones: action.timezones }
     case 'UPDATE_SETTINGS':
       return { ...state, settings: { ...state.settings, ...action.settings } }
     case 'LOGIN':
@@ -121,7 +115,6 @@ interface AppContextValue {
   deleteExpense: (id: string) => void
   updateExchangeRates: (rates: Record<string, number>) => void
   updateSettings: (settings: Partial<LocalSettings>) => void
-  fetchAndStoreTimezones: () => Promise<void>
   getUserName: (userId: string) => string
   getUserColor: (userId: string) => string
   getTripExpenses: (tripId: string) => TripExpense[]
@@ -148,13 +141,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const unsub2 = subscribeToTrips(db, (trips) => dispatch({ type: 'SET_TRIPS', trips }))
         const unsub3 = subscribeToTripExpenses(db, (expenses) => dispatch({ type: 'SET_EXPENSES', expenses }))
         const unsub4 = subscribeToExchangeRates(db, (rates, ratesSyncedAt) => dispatch({ type: 'SET_EXCHANGE_RATES', rates, ratesSyncedAt }))
-        const unsub5 = subscribeToTimezones(db, (timezones) => dispatch({ type: 'SET_TIMEZONES', timezones }))
         return () => {
           unsub1()
           unsub2()
           unsub3()
           unsub4()
-          unsub5()
           firebaseListeningRef.current = false
         }
       }
@@ -316,15 +307,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'UPDATE_SETTINGS', settings })
   }, [])
 
-  const fetchAndStoreTimezones = useCallback(async () => {
-    if (state.timezones.length > 100) return
-    const list = await fetchTimezones()
-    if (list.length > state.timezones.length) {
-      dispatch({ type: 'SET_TIMEZONES', timezones: list })
-      if (dbRef.current) syncTimezones(dbRef.current, list)
-    }
-  }, [state.timezones])
-
   const getUserName = useCallback((userId: string): string => {
     const user = state.users.find((u) => u.id === userId)
     return user?.displayName || '未知'
@@ -376,7 +358,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteExpense,
         updateExchangeRates,
         updateSettings,
-        fetchAndStoreTimezones,
         getUserName,
         getUserColor,
         getTripExpenses,

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { useApp } from '../context/AppContext'
 import type { Trip, TripExpense, SplitMethod, SplitDetail, User } from '../types'
 import { loadExpensePrefs, saveExpensePrefs } from '../utils/storage'
-import { isoToLocalDatetime, localDatetimeToISO } from '../utils/date'
+import { isoToLocalDatetime, localDatetimeToISO, formatDate } from '../utils/date'
 
 interface Props {
   trip: Trip
@@ -316,6 +316,9 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
               value={datetime}
               onChange={(e) => setDatetime(e.target.value)}
             />
+            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '0.25rem' }}>
+              {formatDate(localDatetimeToISO(datetime, trip.timezone), trip.timezone)}
+            </div>
           </div>
 
           </div>
