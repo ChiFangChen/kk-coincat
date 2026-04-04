@@ -133,21 +133,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Initialize Firebase
   useEffect(() => {
     if (isFirebaseConfigured() && !firebaseListeningRef.current) {
-      const db = initFirebase()
-      dbRef.current = db
-      if (db) {
-        firebaseListeningRef.current = true
-        const unsub1 = subscribeToUsers(db, (users) => dispatch({ type: 'SET_USERS', users }))
-        const unsub2 = subscribeToTrips(db, (trips) => dispatch({ type: 'SET_TRIPS', trips }))
-        const unsub3 = subscribeToTripExpenses(db, (expenses) => dispatch({ type: 'SET_EXPENSES', expenses }))
-        const unsub4 = subscribeToExchangeRates(db, (rates, ratesSyncedAt) => dispatch({ type: 'SET_EXCHANGE_RATES', rates, ratesSyncedAt }))
-        return () => {
-          unsub1()
-          unsub2()
-          unsub3()
-          unsub4()
-          firebaseListeningRef.current = false
+      let cleanups: (() => void)[] = []
+      initFirebase().then((db) => {
+        dbRef.current = db
+        if (db) {
+          firebaseListeningRef.current = true
+          const unsub1 = subscribeToUsers(db, (users) => dispatch({ type: 'SET_USERS', users }))
+          const unsub2 = subscribeToTrips(db, (trips) => dispatch({ type: 'SET_TRIPS', trips }))
+          const unsub3 = subscribeToTripExpenses(db, (expenses) => dispatch({ type: 'SET_EXPENSES', expenses }))
+          const unsub4 = subscribeToExchangeRates(db, (rates, ratesSyncedAt) => dispatch({ type: 'SET_EXCHANGE_RATES', rates, ratesSyncedAt }))
+          cleanups = [unsub1, unsub2, unsub3, unsub4]
         }
+      })
+      return () => {
+        cleanups.forEach((fn) => fn())
+        firebaseListeningRef.current = false
       }
     }
   }, [])

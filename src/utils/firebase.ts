@@ -1,4 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
+import { getAuth, signInAnonymously } from 'firebase/auth'
 import {
   getFirestore,
   collection,
@@ -29,11 +30,13 @@ export function isFirebaseConfigured(): boolean {
   return Boolean(firebaseConfig.apiKey && firebaseConfig.projectId)
 }
 
-export function initFirebase(): Firestore | null {
+export async function initFirebase(): Promise<Firestore | null> {
   if (!isFirebaseConfigured()) return null
   if (db) return db
   try {
     app = initializeApp(firebaseConfig)
+    const auth = getAuth(app)
+    await signInAnonymously(auth)
     db = getFirestore(app)
     return db
   } catch (error) {
