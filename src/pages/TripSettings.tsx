@@ -15,7 +15,7 @@ interface Props {
 
 export function TripSettings({ trip, members, onBack }: Props) {
   const { state, updateTrip, deleteTrip, updateExchangeRates, isCurrentUserAdmin, isTripManager, fetchAndStoreTimezones } = useApp()
-  const admin = isCurrentUserAdmin()
+  const admin = isCurrentUserAdmin() || !!localStorage.getItem('kk-coincat-admin-session')
   const manager = isTripManager(trip)
   const canEdit = admin || manager
   const [name, setName] = useState(trip.name)
