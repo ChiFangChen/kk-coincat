@@ -261,7 +261,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
       <div className="settings-section">
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem' }}>
           <h2 style={{ margin: 0 }}>成員</h2>
-          {canEdit && !trip.archived && nonMembers.length > 0 && (
+          {admin && !trip.archived && nonMembers.length > 0 && (
             <button
               className="btn btn-sm btn-primary"
               onClick={() => setShowAddMember(true)}
