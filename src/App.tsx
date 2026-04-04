@@ -94,14 +94,6 @@ function AppContent() {
     document.body
   ) : null
 
-  // Not logged in — only show register if no users exist yet
-  if (!state.auth.currentUser) {
-    if (authPage === 'register') {
-      return <>{joinTripId && <></>}<Register onSwitchToLogin={() => setAuthPage('login')} /></>
-    }
-    return <>{joinTripId && <></>}<Login onSwitchToRegister={() => setAuthPage('register')} /></>
-  }
-
   // Redirect non-member out of saved trip (e.g. after admin switches user, or page refresh)
   const adminSession = isCurrentUserAdmin() || !!localStorage.getItem('kk-coincat-admin-session')
   useEffect(() => {
@@ -113,6 +105,14 @@ function AppContent() {
       setJoinNotice(`未加入「${t.name}」！`)
     }
   }, [selectedTripId, state.auth.currentUser, state.trips, adminSession])
+
+  // Not logged in — only show register if no users exist yet
+  if (!state.auth.currentUser) {
+    if (authPage === 'register') {
+      return <>{joinTripId && <></>}<Register onSwitchToLogin={() => setAuthPage('login')} /></>
+    }
+    return <>{joinTripId && <></>}<Login onSwitchToRegister={() => setAuthPage('register')} /></>
+  }
 
   // Inside a trip
   if (selectedTripId) {
