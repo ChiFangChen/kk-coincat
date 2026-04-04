@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useApp } from '../context/AppContext'
 import { NavBar } from '../components/NavBar'
 import { UserMenu } from '../components/UserMenu'
@@ -11,19 +11,29 @@ import { faArrowLeft, faArchive } from '@fortawesome/free-solid-svg-icons'
 
 interface Props {
   tripId: string
-  onBack: () => void
+  onBack: (notice?: string) => void
 }
 
 export function TripDetail({ tripId, onBack }: Props) {
-  const { state, getTripMembers } = useApp()
+  const { state, getTripMembers, isCurrentUserAdmin } = useApp()
   const [activeTab, setActiveTab] = useState<'expenses' | 'myExpenses' | 'settlement' | 'settings'>('expenses')
   const [showUserMenu, setShowUserMenu] = useState(false)
   const trip = state.trips.find((t) => t.id === tripId)
+  const adminSession = isCurrentUserAdmin() || !!localStorage.getItem('kk-coincat-admin-session')
+
+  useEffect(() => {
+    if (!trip || adminSession) return
+    const userId = state.auth.currentUser?.id
+    if (userId && !trip.members.includes(userId)) {
+      onBack(`未加入「${trip.name}」！`)
+    }
+  }, [trip, state.auth.currentUser, adminSession])
+
   if (!trip) {
     return (
       <div className="page">
         <p>找不到旅程</p>
-        <button className="btn btn-secondary" onClick={onBack}>返回</button>
+        <button className="btn btn-secondary" onClick={() => onBack()}>返回</button>
       </div>
     )
   }

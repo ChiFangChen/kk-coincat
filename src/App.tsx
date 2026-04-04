@@ -107,10 +107,11 @@ function AppContent() {
       <div className={`theme-${state.settings.theme}`} style={{ height: '100%' }}>
         <TripDetail
           tripId={selectedTripId}
-          onBack={() => {
+          onBack={(notice?: string) => {
             setSelectedTripId(null)
             setAuthPage('login')
             localStorage.removeItem('kk-coincat-route-trip')
+            if (notice) setJoinNotice(notice)
           }}
         />
         {joinDialog}
