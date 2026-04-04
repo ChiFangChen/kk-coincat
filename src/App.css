@@ -599,13 +599,13 @@ body {
   color: var(--color-success);
 }
 .my-expenses-total-value.negative {
-  color: var(--color-danger);
+  color: var(--color-destructive);
 }
 .expense-amount.positive {
   color: var(--color-success);
 }
 .expense-amount.negative {
-  color: var(--color-danger);
+  color: var(--color-destructive);
 }
 
 /* Search Bar */
