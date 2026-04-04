@@ -84,7 +84,7 @@ export function subscribeToTrips(
 }
 
 export async function syncTrip(db: Firestore, trip: Trip): Promise<void> {
-  await setDoc(doc(db, 'ccTrips', trip.id), trip)
+  await setDoc(doc(db, 'ccTrips', trip.id), trip, { merge: true })
 }
 
 export async function deleteTripFromFirestore(db: Firestore, id: string): Promise<void> {

@@ -66,7 +66,7 @@ function reducer(state: AppState, action: Action): AppState {
     case 'UPDATE_TRIP':
       return {
         ...state,
-        trips: state.trips.map((t) => (t.id === action.trip.id ? action.trip : t)),
+        trips: state.trips.map((t) => (t.id === action.trip.id ? { ...t, ...action.trip } : t)),
       }
     case 'DELETE_TRIP':
       return {
