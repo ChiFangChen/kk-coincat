@@ -88,7 +88,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
     e.preventDefault()
     setSubmitAttempted(true)
     setShowSplitError(true)
-    if (!payer || !item.trim() || !amount || participants.length === 0) return
+    if (!payer || !amount || participants.length === 0) return
 
     const numAmount = parseFloat(amount)
     if (isNaN(numAmount) || numAmount <= 0) return
@@ -181,12 +181,8 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
               value={item}
               onChange={(e) => setItem(e.target.value)}
 
-              required
               autoFocus
             />
-            {submitAttempted && !item.trim() && (
-              <div className="split-error">請輸入項目名稱</div>
-            )}
           </div>
 
           <div className="form-row">

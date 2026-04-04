@@ -121,6 +121,9 @@ export function Login({ onSwitchToRegister }: Props) {
                 autoComplete="off"
                 required
               />
+              <p className="settings-hint" style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>
+                此為簡易帳號系統，密碼以明碼儲存，請勿使用重要密碼
+              </p>
             </div>
             {forgotError && <div className="auth-error">{forgotError}</div>}
             <button type="submit" className="btn btn-primary auth-btn">重置密碼</button>

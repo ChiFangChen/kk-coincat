@@ -229,6 +229,9 @@ export function UserMenu({ onClose, onSwitchUser }: Props) {
                   autoComplete="off"
                   required
                 />
+                <p className="settings-hint" style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>
+                  此為簡易帳號系統，密碼以明碼儲存，請勿使用重要密碼
+                </p>
               </div>
               <div className="form-group">
                 <label>顯示名稱</label>
@@ -362,6 +365,9 @@ export function UserMenu({ onClose, onSwitchUser }: Props) {
                     autoFocus
                     required
                   />
+                  <p className="settings-hint" style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>
+                    此為簡易帳號系統，密碼以明碼儲存，請勿使用重要密碼
+                  </p>
                 </div>
                 <div className="dialog-actions">
                   <button type="button" className="btn btn-secondary" onClick={() => setView('menu')}>取消</button>
