@@ -12,7 +12,7 @@ import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons'
 import './App.css'
 
 function AppContent() {
-  const { state, updateSettings, updateTrip } = useApp()
+  const { state, updateSettings, updateTrip, isCurrentUserAdmin } = useApp()
 
   // Sync theme class to <html> so background-color stays correct during transitions
   useEffect(() => {
@@ -100,6 +100,18 @@ function AppContent() {
     }
     return <>{joinTripId && <></>}<Login onSwitchToRegister={() => setAuthPage('register')} /></>
   }
+
+  // Redirect non-member out of saved trip (e.g. after admin switches user, or page refresh)
+  const adminSession = isCurrentUserAdmin() || !!localStorage.getItem('kk-coincat-admin-session')
+  useEffect(() => {
+    if (!selectedTripId || !state.auth.currentUser || adminSession) return
+    const t = state.trips.find((t) => t.id === selectedTripId)
+    if (t && !t.members.includes(state.auth.currentUser.id)) {
+      setSelectedTripId(null)
+      localStorage.removeItem('kk-coincat-route-trip')
+      setJoinNotice(`未加入「${t.name}」！`)
+    }
+  }, [selectedTripId, state.auth.currentUser, state.trips, adminSession])
 
   // Inside a trip
   if (selectedTripId) {
