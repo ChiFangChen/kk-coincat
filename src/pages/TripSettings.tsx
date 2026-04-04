@@ -5,7 +5,7 @@ import { fetchExchangeRates } from '../utils/currency'
 import { formatDate, formatTimezoneLabel } from '../utils/date'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSync, faArchive, faBoxOpen, faUserPlus, faTrash, faPlus, faCheck, faTimes, faStar as faStarSolid, faShareNodes, faUserMinus } from '@fortawesome/free-solid-svg-icons'
+import { faSync, faArchive, faBoxOpen, faUserPlus, faTrash, faPlus, faCheck, faTimes, faStar as faStarSolid, faShareNodes, faUserMinus, faCrown } from '@fortawesome/free-solid-svg-icons'
 
 interface Props {
   trip: Trip
@@ -294,7 +294,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
               <div className="payer-badge" style={m.color ? { backgroundColor: m.color } : undefined}>{m.displayName.charAt(0).toUpperCase()}</div>
               <span className="member-row-name">{m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} /></span>
               {m.id === state.auth.currentUser?.id && <span className="you-tag">你</span>}
-              {m.id === effectiveManagerId && <span className="manager-tag">負責人</span>}
+              {(m.id === effectiveManagerId || m.id === adminUser?.id) && <span className="manager-tag"><FontAwesomeIcon icon={faCrown} /> 負責人</span>}
               {admin && !trip.archived && m.id !== state.auth.currentUser?.id && (
                 <button
                   className={`btn-icon${trip.managerId === m.id ? ' btn-manager-active' : ''}`}
