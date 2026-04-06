@@ -120,6 +120,102 @@ export function calculateShares(
   return shares
 }
 
+export interface CurrencyBreakdownEntry {
+  amount: number        // net in original currency
+  convertedAmount: number // net in primary currency
+}
+
+/**
+ * Calculate per-person breakdown of net balance by original currency.
+ * Returns both original and converted amounts so the UI can show equivalences.
+ * Accepts pre-calculated balances to ensure the primary currency entry
+ * is derived as (total - other currencies) so numbers always add up.
+ */
+export function calculateCurrencyBreakdown(
+  expenses: TripExpense[],
+  memberIds: string[],
+  primaryCurrency: string,
+  balances: Record<string, number>,
+): Record<string, Record<string, CurrencyBreakdownEntry>> {
+  const breakdown: Record<string, Record<string, CurrencyBreakdownEntry>> = {}
+  for (const id of memberIds) {
+    breakdown[id] = {}
+  }
+
+  const ensure = (userId: string, currency: string) => {
+    if (!breakdown[userId][currency]) {
+      breakdown[userId][currency] = { amount: 0, convertedAmount: 0 }
+    }
+  }
+
+  for (const expense of expenses) {
+    const { payer, amount, currency, convertedAmount, splitMethod, participants, splitDetails } = expense
+
+    // Payer paid in original currency
+    if (breakdown[payer]) {
+      ensure(payer, currency)
+      breakdown[payer][currency].amount += amount
+      breakdown[payer][currency].convertedAmount += convertedAmount
+    }
+
+    // Calculate each participant's share
+    const sharesConverted = calculateShares(convertedAmount, splitMethod, participants, splitDetails)
+
+    for (const [userId, shareConverted] of Object.entries(sharesConverted)) {
+      if (!breakdown[userId]) continue
+      ensure(userId, currency)
+      const shareOriginal = convertedAmount !== 0
+        ? (shareConverted / convertedAmount) * amount
+        : 0
+      breakdown[userId][currency].amount -= shareOriginal
+      breakdown[userId][currency].convertedAmount -= shareConverted
+    }
+  }
+
+  // Round values and remove near-zero entries, then fix primary currency to match total
+  for (const userId of memberIds) {
+    const currencies = breakdown[userId]
+
+    // Round non-primary currencies first
+    let nonPrimaryConvertedSum = 0
+    for (const cur of Object.keys(currencies)) {
+      const entry = currencies[cur]
+      const threshold = isZeroDecimalCurrency(cur) ? 1 : 0.01
+      if (Math.abs(entry.amount) < threshold) {
+        delete currencies[cur]
+        continue
+      }
+      if (isZeroDecimalCurrency(cur)) {
+        entry.amount = Math.round(entry.amount)
+      } else {
+        entry.amount = Math.round(entry.amount * 100) / 100
+      }
+      entry.convertedAmount = Math.round(entry.convertedAmount)
+      if (cur !== primaryCurrency) {
+        nonPrimaryConvertedSum += entry.convertedAmount
+      }
+    }
+
+    // Fix primary currency: derive from total balance so it always adds up
+    const total = balances[userId] || 0
+    const primaryConverted = Math.round(total - nonPrimaryConvertedSum)
+    if (currencies[primaryCurrency]) {
+      currencies[primaryCurrency].convertedAmount = primaryConverted
+      // For primary currency, amount === convertedAmount
+      currencies[primaryCurrency].amount = primaryConverted
+    }
+    // Remove primary if near-zero after adjustment
+    if (currencies[primaryCurrency]) {
+      const threshold = isZeroDecimalCurrency(primaryCurrency) ? 1 : 0.01
+      if (Math.abs(currencies[primaryCurrency].amount) < threshold) {
+        delete currencies[primaryCurrency]
+      }
+    }
+  }
+
+  return breakdown
+}
+
 /**
  * Minimize the number of transfers needed to settle all debts.
  * Uses greedy algorithm: match the largest creditor with the largest debtor.

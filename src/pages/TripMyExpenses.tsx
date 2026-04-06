@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User } from '../types'
-import { calculateBalances, calculateShares } from '../utils/settlement'
+import { calculateBalances, calculateCurrencyBreakdown, calculateShares } from '../utils/settlement'
 import { formatDate } from '../utils/date'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHandshake } from '@fortawesome/free-solid-svg-icons'
@@ -38,6 +38,23 @@ export function TripMyExpenses({ trip, members }: Props) {
     return balances[currentUser.id] || 0
   }, [expenses, trip.members, trip.primaryCurrency, currentUser])
 
+  const myBreakdown = useMemo(() => {
+    if (!currentUser) return null
+    const balances = calculateBalances(expenses, trip.members, trip.primaryCurrency)
+    const bd = calculateCurrencyBreakdown(expenses, trip.members, trip.primaryCurrency, balances)[currentUser.id] || {}
+    const currencies = Object.keys(bd)
+    const hasNonPrimary = currencies.some(c => c !== trip.primaryCurrency)
+    if (!hasNonPrimary || currencies.length === 0) return null
+    return currencies
+      .sort((a, b) => a === trip.primaryCurrency ? -1 : b === trip.primaryCurrency ? 1 : a.localeCompare(b))
+      .map(cur => {
+        const entry = bd[cur]
+        const sign = entry.amount > 0 ? '+' : ''
+        return `${sign}${entry.amount.toLocaleString()}${cur}`
+      })
+      .join(' / ')
+  }, [expenses, trip.members, trip.primaryCurrency, currentUser])
+
   const fmt = (iso: string) => formatDate(iso, trip.timezone)
 
   if (!currentUser) return null
@@ -50,6 +67,9 @@ export function TripMyExpenses({ trip, members }: Props) {
         <span className={`my-expenses-total-value ${total >= 0 ? 'positive' : 'negative'}`}>
           {total >= 0 ? '+' : ''}{total.toLocaleString()} {trip.primaryCurrency}
         </span>
+        {myBreakdown && (
+          <span className="my-expenses-total-breakdown">({myBreakdown})</span>
+        )}
       </div>
 
       {/* Expense list */}

@@ -583,9 +583,17 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   padding: 1rem;
   margin-bottom: 1rem;
   background: none;
+}
+.my-expenses-total-breakdown {
+  width: 100%;
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--color-muted-foreground);
+  margin-top: 0.125rem;
 }
 .my-expenses-total-label {
   font-size: 1rem;
@@ -925,6 +933,9 @@ body {
   font-size: 0.875rem;
   font-weight: 500;
 }
+.balance-right {
+  text-align: right;
+}
 .balance-amount {
   font-size: 1rem;
   font-weight: 700;
@@ -940,6 +951,12 @@ body {
   font-weight: 400;
   color: var(--color-muted-foreground);
   margin-left: 0.25rem;
+}
+.balance-breakdown {
+  font-size: 0.7rem;
+  color: var(--color-muted-foreground);
+  margin-top: 0.125rem;
+  text-align: right;
 }
 
 /* Transfer suggestions */

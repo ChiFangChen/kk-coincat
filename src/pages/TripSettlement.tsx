@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User, SplitDetail } from '../types'
-import { calculateBalances, minimizeTransfers, settledThreshold } from '../utils/settlement'
+import { calculateBalances, calculateCurrencyBreakdown, minimizeTransfers, settledThreshold } from '../utils/settlement'
 import { ExpenseForm } from '../components/ExpenseForm'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -29,6 +29,7 @@ export function TripSettlement({ trip, members }: Props) {
   const expenses = getTripExpenses(trip.id)
   const threshold = settledThreshold(trip.primaryCurrency)
   const balances = calculateBalances(expenses, trip.members, trip.primaryCurrency)
+  const currencyBreakdown = calculateCurrencyBreakdown(expenses, trip.members, trip.primaryCurrency, balances)
   const transfers = minimizeTransfers(balances, threshold)
 
   const handleSettle = (from: string, to: string, amount: number) => {
@@ -69,13 +70,33 @@ export function TripSettlement({ trip, members }: Props) {
             return (
               <div key={m.id} className="balance-item">
                 <div className="balance-name">{m.displayName}<span className="color-dot" style={{ backgroundColor: m.color }} /></div>
-                <div className={`balance-amount ${balance > threshold ? 'positive' : balance < -threshold ? 'negative' : ''}`}>
-                  {balance > threshold
-                    ? `+${balance.toFixed(0)}`
-                    : balance < -threshold
-                      ? `${balance.toFixed(0)}`
-                      : '0'}
-                  <span className="balance-currency">{trip.primaryCurrency}</span>
+                <div className="balance-right">
+                  <div className={`balance-amount ${balance > threshold ? 'positive' : balance < -threshold ? 'negative' : ''}`}>
+                    {balance > threshold
+                      ? `+${balance.toFixed(0)}`
+                      : balance < -threshold
+                        ? `${balance.toFixed(0)}`
+                        : '0'}
+                    <span className="balance-currency">{trip.primaryCurrency}</span>
+                  </div>
+                  {(() => {
+                    const bd = currencyBreakdown[m.id] || {}
+                    const currencies = Object.keys(bd)
+                    const hasNonPrimary = currencies.some(c => c !== trip.primaryCurrency)
+                    if (!hasNonPrimary || currencies.length === 0) return null
+                    const parts = currencies
+                      .sort((a, b) => a === trip.primaryCurrency ? -1 : b === trip.primaryCurrency ? 1 : a.localeCompare(b))
+                      .map(cur => {
+                        const entry = bd[cur]
+                        const sign = entry.amount > 0 ? '+' : ''
+                        return `${sign}${entry.amount.toLocaleString()}${cur}`
+                      })
+                    return (
+                      <div className="balance-breakdown">
+                        ({parts.join(' / ')})
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
             )
