@@ -27,7 +27,11 @@ export function TripMyExpenses({ trip, members }: Props) {
         const delta = e.payer === currentUser.id
           ? e.convertedAmount - myShare
           : -myShare
-        return { expense: e, myShare, delta }
+        // Original currency delta (proportional to converted delta)
+        const originalDelta = e.convertedAmount !== 0
+          ? (delta / e.convertedAmount) * e.amount
+          : 0
+        return { expense: e, myShare, delta, originalDelta }
       })
   }, [expenses, currentUser])
 
@@ -79,7 +83,7 @@ export function TripMyExpenses({ trip, members }: Props) {
         </div>
       ) : (
         <div className="expense-list">
-          {myItems.map(({ expense, delta }) => {
+          {myItems.map(({ expense, delta, originalDelta }) => {
             const roundedDelta = Math.round(delta * 10) / 10
             return (
               <div
@@ -111,12 +115,18 @@ export function TripMyExpenses({ trip, members }: Props) {
                 </div>
                 <div className="expense-right">
                   <div>
-                    <div className={`expense-amount ${roundedDelta >= 0 ? 'positive' : 'negative'}`}>
-                      {roundedDelta >= 0 ? '+' : ''}{roundedDelta.toLocaleString()} {trip.primaryCurrency}
-                    </div>
-                    {expense.currency !== trip.primaryCurrency && (
-                      <div className="expense-converted">
-                        {expense.amount.toLocaleString()} {expense.currency}
+                    {expense.currency !== trip.primaryCurrency ? (
+                      <>
+                        <div className={`expense-amount ${roundedDelta >= 0 ? 'positive' : 'negative'}`}>
+                          {Math.round(originalDelta * 10) / 10 >= 0 ? '+' : ''}{(Math.round(originalDelta * 10) / 10).toLocaleString()} {expense.currency}
+                        </div>
+                        <div className="expense-converted">
+                          ≈ {roundedDelta >= 0 ? '+' : ''}{roundedDelta.toLocaleString()} {trip.primaryCurrency}
+                        </div>
+                      </>
+                    ) : (
+                      <div className={`expense-amount ${roundedDelta >= 0 ? 'positive' : 'negative'}`}>
+                        {roundedDelta >= 0 ? '+' : ''}{roundedDelta.toLocaleString()} {trip.primaryCurrency}
                       </div>
                     )}
                   </div>

@@ -759,6 +759,7 @@ body {
   font-size: 0.75rem;
   color: var(--color-muted-foreground);
   white-space: nowrap;
+  text-align: right;
 }
 .btn-delete {
   color: var(--color-destructive);
