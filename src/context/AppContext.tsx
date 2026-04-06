@@ -88,7 +88,7 @@ function reducer(state: AppState, action: Action): AppState {
         expenses: state.expenses.filter((e) => e.id !== action.id),
       }
     case 'SET_EXCHANGE_RATES':
-      return { ...state, exchangeRates: action.rates, ratesSyncedAt: action.ratesSyncedAt ?? state.ratesSyncedAt }
+      return { ...state, exchangeRates: action.rates, ratesSyncedAt: action.ratesSyncedAt || state.ratesSyncedAt }
     case 'UPDATE_SETTINGS':
       return { ...state, settings: { ...state.settings, ...action.settings } }
     case 'LOGIN':
