@@ -212,7 +212,7 @@ body {
 }
 @keyframes spin {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to { transform: rotate(-360deg); }
 }
 .loading-spinner {
   animation: spin 1.5s linear infinite;
