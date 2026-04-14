@@ -139,7 +139,7 @@ export function TripExpenses({ trip, members }: Props) {
               onClick={() => handleEdit(expense)}
             >
               <div className="expense-left">
-                <div className="payer-badge" style={members.find((m) => m.id === expense.payer)?.color ? { backgroundColor: members.find((m) => m.id === expense.payer)!.color } : undefined}>
+                <div className="payer-badge" style={members.find((m) => m.id === expense.payer)?.color ? { backgroundColor: members.find((m) => m.id === expense.payer)?.color } : undefined}>
                   {getUserName(expense.payer).charAt(0).toUpperCase()}
                 </div>
                 <div className="expense-info">

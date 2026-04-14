@@ -34,8 +34,16 @@ function roundBalancesLargestRemainder(balances: Record<string, number>): Record
 
   // Sort by fractional part descending, distribute +1
   remainders.sort((a, b) => b.frac - a.frac)
-  for (let i = 0; i < diff; i++) {
+  const adjustCount = Math.max(0, Math.min(diff, remainders.length))
+  for (let i = 0; i < adjustCount; i++) {
     floored[remainders[i].id] += 1
+  }
+
+  // Force zero-sum: adjust entry with largest absolute value (least relative impact)
+  const sum = ids.reduce((s, id) => s + floored[id], 0)
+  if (sum !== 0) {
+    const maxId = ids.reduce((a, b) => Math.abs(floored[a]) >= Math.abs(floored[b]) ? a : b)
+    floored[maxId] -= sum
   }
 
   return floored
