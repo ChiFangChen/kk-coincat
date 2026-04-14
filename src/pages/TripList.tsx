@@ -133,7 +133,7 @@ export function TripList({ onSelectTrip }: Props) {
                 </div>
                 <div className="trip-card-members">
                   {(() => {
-                    const adminId = state.users.find(u => (u.isAdmin || u.username === 'kiki') && trip.members.includes(u.id))?.id
+                    const adminId = state.users.find(u => u.isAdmin && trip.members.includes(u.id))?.id
                     const sorted = adminId ? [adminId, ...trip.members.filter(id => id !== adminId)] : trip.members
                     return sorted.map((id) => (
                       <span key={id} className="trip-member-tag">

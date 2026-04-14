@@ -94,15 +94,15 @@ export function UserMenu({ onClose, onSwitchUser }: Props) {
   }
 
   const activeUsers = state.users.filter((u) => !u.deleted).sort((a, b) => {
-    const aAdmin = a.isAdmin || a.username === 'kiki'
-    const bAdmin = b.isAdmin || b.username === 'kiki'
+    const aAdmin = !!a.isAdmin
+    const bAdmin = !!b.isAdmin
     if (aAdmin && !bAdmin) return -1
     if (!aAdmin && bAdmin) return 1
     return 0
   })
   const isAdminSession = admin || !!adminSessionId
   const otherUsers = activeUsers.filter((u) => u.id !== currentUser.id)
-  const realAdminId = state.users.find((u) => u.isAdmin)?.id || state.users.find((u) => u.username === 'kiki')?.id
+  const realAdminId = state.users.find((u) => u.isAdmin)?.id
   const deleteTarget = confirmDelete ? state.users.find((u) => u.id === confirmDelete) : null
 
   return (

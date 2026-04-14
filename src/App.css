@@ -200,6 +200,14 @@ body {
   font-size: 4rem;
   margin-bottom: 0.25rem;
 }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.loading-spinner {
+  animation: spin 1.5s linear infinite;
+  display: inline-block;
+}
 .identity-title {
   font-size: 1.875rem;
   font-weight: 700;

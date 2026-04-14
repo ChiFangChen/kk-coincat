@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useReducer, useCallback, useRef } from 'react'
+import React, { createContext, useContext, useEffect, useReducer, useCallback, useRef, useState } from 'react'
 import type { AppState, User, Trip, TripExpense, LocalSettings } from '../types'
 import { USER_COLORS } from '../types'
 import { loadState, saveState, saveAuth } from '../utils/storage'
@@ -102,6 +102,7 @@ function reducer(state: AppState, action: Action): AppState {
 
 interface AppContextValue {
   state: AppState
+  loading: boolean
   login: (user: User) => void
   logout: () => void
   register: (username: string, password: string, displayName: string) => Promise<User>
@@ -127,6 +128,7 @@ const AppContext = createContext<AppContextValue | null>(null)
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, loadState)
+  const [loading, setLoading] = useState(isFirebaseConfigured())
   const dbRef = useRef<Firestore | null>(null)
   const firebaseListeningRef = useRef(false)
 
@@ -138,11 +140,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dbRef.current = db
         if (db) {
           firebaseListeningRef.current = true
-          const unsub1 = subscribeToUsers(db, (users) => dispatch({ type: 'SET_USERS', users }))
-          const unsub2 = subscribeToTrips(db, (trips) => dispatch({ type: 'SET_TRIPS', trips }))
+          let usersLoaded = false
+          let tripsLoaded = false
+          const checkReady = () => {
+            if (usersLoaded && tripsLoaded) setLoading(false)
+          }
+          const unsub1 = subscribeToUsers(db, (users) => {
+            dispatch({ type: 'SET_USERS', users })
+            usersLoaded = true
+            checkReady()
+          })
+          const unsub2 = subscribeToTrips(db, (trips) => {
+            dispatch({ type: 'SET_TRIPS', trips })
+            tripsLoaded = true
+            checkReady()
+          })
           const unsub3 = subscribeToTripExpenses(db, (expenses) => dispatch({ type: 'SET_EXPENSES', expenses }))
           const unsub4 = subscribeToExchangeRates(db, (rates, ratesSyncedAt) => dispatch({ type: 'SET_EXCHANGE_RATES', rates, ratesSyncedAt }))
           cleanups = [unsub1, unsub2, unsub3, unsub4]
+        } else {
+          setLoading(false)
         }
       })
       return () => {
@@ -183,7 +200,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const register = useCallback(async (username: string, password: string, displayName: string): Promise<User> => {
-    const isFirstUser = state.users.length === 0
     const usedColors = state.users.map((u) => u.color)
     const available = USER_COLORS.filter((c) => !usedColors.includes(c))
     const colorPool = available.length > 0 ? available : USER_COLORS
@@ -194,7 +210,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       password,
       displayName,
       color,
-      isAdmin: isFirstUser,
+      isAdmin: false,
       createdAt: new Date().toISOString(),
     }
     dispatch({ type: 'ADD_USER', user })
@@ -327,8 +343,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .filter((u): u is User => u !== undefined)
     // Admin always first
     members.sort((a, b) => {
-      const aAdmin = a.isAdmin || a.username === 'kiki'
-      const bAdmin = b.isAdmin || b.username === 'kiki'
+      const aAdmin = !!a.isAdmin
+      const bAdmin = !!b.isAdmin
       if (aAdmin && !bAdmin) return -1
       if (!aAdmin && bAdmin) return 1
       return 0
@@ -339,9 +355,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const isCurrentUserAdmin = useCallback((): boolean => {
     const user = state.auth.currentUser
     if (!user) return false
-    if (user.isAdmin) return true
-    return user.username === 'kiki'
-  }, [state.auth.currentUser, state.users])
+    return !!user.isAdmin
+  }, [state.auth.currentUser])
 
   const isTripManager = useCallback((trip: Trip): boolean => {
     const user = state.auth.currentUser
@@ -354,6 +369,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     <AppContext.Provider
       value={{
         state,
+        loading,
         login,
         logout,
         register,

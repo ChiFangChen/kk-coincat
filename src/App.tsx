@@ -13,7 +13,7 @@ import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons'
 import './App.css'
 
 function AppContent() {
-  const { state, updateSettings, updateTrip, isCurrentUserAdmin } = useApp()
+  const { state, loading, updateSettings, updateTrip, isCurrentUserAdmin } = useApp()
 
   // Sync theme class to <html> so background-color stays correct during transitions
   useEffect(() => {
@@ -113,6 +113,15 @@ function AppContent() {
       setJoinNotice(`未加入「${t.name}」！`)
     }
   }, [selectedTripId, state.auth.currentUser, state.trips, adminSession])
+
+  // Loading Firebase data
+  if (loading) {
+    return (
+      <div className="identity-page">
+        <div className="login-logo loading-spinner">🐈‍⬛</div>
+      </div>
+    )
+  }
 
   // Not logged in — only show register if no users exist yet
   if (!state.auth.currentUser) {
