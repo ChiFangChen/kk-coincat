@@ -4,6 +4,7 @@ import { USER_COLORS } from '../types'
 import { loadState, saveState, saveAuth } from '../utils/storage'
 import { generateId } from '../utils/id'
 import { convertToDefault, fetchExchangeRates } from '../utils/currency'
+import { LOCAL_TIMEZONE } from '../utils/date'
 import {
   initFirebase,
   isFirebaseConfigured,
@@ -57,7 +58,7 @@ function reducer(state: AppState, action: Action): AppState {
           : state.auth,
       }
     case 'SET_TRIPS':
-      return { ...state, trips: action.trips.map(t => ({ ...t, timezone: t.timezone || 'Asia/Taipei', trackedCurrencies: t.trackedCurrencies || [] })) }
+      return { ...state, trips: action.trips.map(t => ({ ...t, timezone: t.timezone || LOCAL_TIMEZONE, trackedCurrencies: t.trackedCurrencies || [] })) }
     case 'ADD_TRIP':
       return { ...state, trips: [action.trip, ...state.trips] }
     case 'UPDATE_TRIP':
@@ -244,7 +245,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       primaryCurrency,
       members: memberIds,
       creator: state.auth.currentUser.id,
-      timezone: 'Asia/Taipei',
+      timezone: LOCAL_TIMEZONE,
       trackedCurrencies: [],
       archived: false,
       createdAt: now,

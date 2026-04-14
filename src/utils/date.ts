@@ -14,8 +14,11 @@ function getTzOffsetMinutes(date: Date, timezone: string): number {
   return (wall - date.getTime()) / 60000
 }
 
+/** Browser's local IANA timezone */
+export const LOCAL_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
+
 /** Format ISO timestamp to "2026/2/18 4:40 AM" in the given timezone */
-export function formatDate(iso: string, timezone: string = 'Asia/Taipei'): string {
+export function formatDate(iso: string, timezone: string = LOCAL_TIMEZONE): string {
   const d = new Date(iso)
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,

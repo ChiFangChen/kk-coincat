@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../context/AppContext'
 import type { Trip, User } from '../types'
-import { formatDate, formatTimezoneLabel, getTimezones } from '../utils/date'
+import { formatDate, formatTimezoneLabel, getTimezones, LOCAL_TIMEZONE } from '../utils/date'
 import { fetchExchangeRates } from '../utils/currency'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -152,7 +152,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
           <div className="form-group" style={{ position: 'relative' }}>
             <input
               type="text"
-              value={tzOpen ? tzSearch : formatTimezoneLabel(trip.timezone || 'Asia/Taipei')}
+              value={tzOpen ? tzSearch : formatTimezoneLabel(trip.timezone || LOCAL_TIMEZONE)}
               placeholder="搜尋時區..."
               onFocus={() => { setTzOpen(true); setTzSearch('') }}
               onBlur={() => setTimeout(() => setTzOpen(false), 200)}
@@ -163,7 +163,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
                 {filteredTimezones.slice(0, 20).map((tz) => (
                   <div
                     key={tz}
-                    className={`tz-dropdown-item${tz === (trip.timezone || 'Asia/Taipei') ? ' active' : ''}`}
+                    className={`tz-dropdown-item${tz === (trip.timezone || LOCAL_TIMEZONE) ? ' active' : ''}`}
                     onMouseDown={() => {
                       updateTrip(trip.id, { timezone: tz })
                       setTzOpen(false)
@@ -182,7 +182,7 @@ export function TripSettings({ trip, members, onBack }: Props) {
             )}
           </div>
         ) : (
-          <div className="settings-value">{formatTimezoneLabel(trip.timezone || 'Asia/Taipei')}</div>
+          <div className="settings-value">{formatTimezoneLabel(trip.timezone || LOCAL_TIMEZONE)}</div>
         )}
       </div>
 

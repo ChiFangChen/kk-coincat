@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../context/AppContext'
 import { NavBar } from '../components/NavBar'
 import { UserMenu } from '../components/UserMenu'
@@ -14,12 +14,22 @@ interface Props {
   onBack: (notice?: string) => void
 }
 
+type CoinCatTab = 'expenses' | 'myExpenses' | 'settlement' | 'settings'
+
 export function TripDetail({ tripId, onBack }: Props) {
   const { state, getTripMembers, isCurrentUserAdmin, firebaseConnected } = useApp()
-  const [activeTab, setActiveTab] = useState<'expenses' | 'myExpenses' | 'settlement' | 'settings'>('expenses')
+  const tabKey = `kk-coincat-tab-${tripId}`
+  const [activeTab, setActiveTab] = useState<CoinCatTab>(() => {
+    return (localStorage.getItem(tabKey) as CoinCatTab) || 'expenses'
+  })
   const [showUserMenu, setShowUserMenu] = useState(false)
   const trip = state.trips.find((t) => t.id === tripId)
   const adminSession = isCurrentUserAdmin() || !!localStorage.getItem('kk-coincat-admin-session')
+
+  const handleTabChange = useCallback((tab: CoinCatTab) => {
+    setActiveTab(tab)
+    localStorage.setItem(tabKey, tab)
+  }, [tabKey])
 
   useEffect(() => {
     if (!trip || adminSession) return
@@ -75,7 +85,7 @@ export function TripDetail({ tripId, onBack }: Props) {
         {activeTab === 'settings' && <TripSettings trip={trip} members={members} onBack={onBack} />}
       </div>
 
-      <NavBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <NavBar activeTab={activeTab} onTabChange={handleTabChange} />
       {showUserMenu && <UserMenu onClose={() => setShowUserMenu(false)} onSwitchUser={onBack} />}
     </div>
   )

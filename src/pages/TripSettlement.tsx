@@ -140,7 +140,7 @@ export function TripSettlement({ trip, members }: Props) {
                       className="btn btn-sm btn-primary"
                       onClick={() => setConfirmSettle({ from: t.from, to: t.to, amount: t.amount })}
                     >
-                      <FontAwesomeIcon icon={faCheck} /><span>已結清</span>
+                      <FontAwesomeIcon icon={faCheck} /><span>結清</span>
                     </button>
                     <button
                       className="btn btn-sm btn-secondary"

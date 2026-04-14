@@ -35,7 +35,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
   const [splitDetails, setSplitDetails] = useState<SplitDetail[]>(
     editingExpense?.splitDetails || members.map((m) => ({ userId: m.id, value: 0 }))
   )
-  const tz = trip.timezone || 'Asia/Taipei'
+  const tz = trip.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
   const [datetime, setDatetime] = useState(() => {
     if (editingExpense) return isoToLocalDatetime(editingExpense.createdAt, tz)
     return isoToLocalDatetime(new Date().toISOString(), tz)
