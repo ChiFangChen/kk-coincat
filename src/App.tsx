@@ -9,11 +9,11 @@ import { UserMenu } from './components/UserMenu'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { UpdatePrompt } from './components/UpdatePrompt'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons'
+import { faSun, faMoon, faExclamationCircle } from '@fortawesome/free-solid-svg-icons'
 import './App.css'
 
 function AppContent() {
-  const { state, loading, updateSettings, updateTrip, isCurrentUserAdmin } = useApp()
+  const { state, loading, updateSettings, updateTrip, isCurrentUserAdmin, firebaseConnected } = useApp()
 
   // Sync theme class to <html> so background-color stays correct during transitions
   useEffect(() => {
@@ -159,6 +159,11 @@ function AppContent() {
           <span className="top-bar-title">KK CoinCat</span>
         </div>
         <div className="top-bar-right">
+          {!firebaseConnected && (
+            <span className="sync-warning-icon" title="尚未連線，編輯內容僅儲存在本機">
+              <FontAwesomeIcon icon={faExclamationCircle} />
+            </span>
+          )}
           <button
             className="btn-icon"
             onClick={() => updateSettings({ theme: state.settings.theme === 'dark' ? 'light' : 'dark' })}

@@ -29,7 +29,7 @@ export function TripSettlement({ trip, members }: Props) {
   const expenses = getTripExpenses(trip.id)
   const threshold = settledThreshold(trip.primaryCurrency)
   const balances = calculateBalances(expenses, trip.members, trip.primaryCurrency)
-  const currencyBreakdown = calculateCurrencyBreakdown(expenses, trip.members, trip.primaryCurrency, balances)
+  const currencyBreakdown = calculateCurrencyBreakdown(expenses, trip.members, trip.primaryCurrency)
   const transfers = minimizeTransfers(balances, threshold)
 
   const handleSettle = (from: string, to: string, amount: number) => {

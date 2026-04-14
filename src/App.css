@@ -111,6 +111,16 @@ body {
   gap: 0.5rem;
 }
 
+.sync-warning-icon {
+  color: #f59e0b;
+  font-size: 1.1rem;
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 /* Trip header */
 .trip-header {
   display: flex;

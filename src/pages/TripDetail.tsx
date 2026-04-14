@@ -7,7 +7,7 @@ import { TripMyExpenses } from './TripMyExpenses'
 import { TripSettlement } from './TripSettlement'
 import { TripSettings } from './TripSettings'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowLeft, faArchive } from '@fortawesome/free-solid-svg-icons'
+import { faArrowLeft, faArchive, faExclamationCircle } from '@fortawesome/free-solid-svg-icons'
 
 interface Props {
   tripId: string
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function TripDetail({ tripId, onBack }: Props) {
-  const { state, getTripMembers, isCurrentUserAdmin } = useApp()
+  const { state, getTripMembers, isCurrentUserAdmin, firebaseConnected } = useApp()
   const [activeTab, setActiveTab] = useState<'expenses' | 'myExpenses' | 'settlement' | 'settings'>('expenses')
   const [showUserMenu, setShowUserMenu] = useState(false)
   const trip = state.trips.find((t) => t.id === tripId)
@@ -50,6 +50,11 @@ export function TripDetail({ tripId, onBack }: Props) {
         {trip.archived && (
           <span className="trip-archived-badge">
             <FontAwesomeIcon icon={faArchive} /> 已歸檔
+          </span>
+        )}
+        {!firebaseConnected && (
+          <span className="sync-warning-icon" title="尚未連線，編輯內容僅儲存在本機">
+            <FontAwesomeIcon icon={faExclamationCircle} />
           </span>
         )}
         {state.auth.currentUser && (

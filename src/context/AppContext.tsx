@@ -122,6 +122,7 @@ interface AppContextValue {
   getTripMembers: (trip: Trip) => User[]
   isCurrentUserAdmin: () => boolean
   isTripManager: (trip: Trip) => boolean
+  firebaseConnected: boolean
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -129,6 +130,7 @@ const AppContext = createContext<AppContextValue | null>(null)
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, loadState)
   const [loading, setLoading] = useState(isFirebaseConfigured())
+  const [dbReady, setDbReady] = useState(false)
   const dbRef = useRef<Firestore | null>(null)
   const firebaseListeningRef = useRef(false)
 
@@ -140,6 +142,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dbRef.current = db
         if (db) {
           firebaseListeningRef.current = true
+          setDbReady(true)
           let usersLoaded = false
           let tripsLoaded = false
           const checkReady = () => {
@@ -389,6 +392,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         getTripMembers,
         isCurrentUserAdmin,
         isTripManager,
+        firebaseConnected: dbReady,
       }}
     >
       {children}

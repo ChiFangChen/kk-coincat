@@ -143,7 +143,6 @@ export function calculateCurrencyBreakdown(
   expenses: TripExpense[],
   memberIds: string[],
   primaryCurrency: string,
-  balances: Record<string, number>,
 ): Record<string, Record<string, CurrencyBreakdownEntry>> {
   const breakdown: Record<string, Record<string, CurrencyBreakdownEntry>> = {}
   for (const id of memberIds) {
@@ -180,12 +179,9 @@ export function calculateCurrencyBreakdown(
     }
   }
 
-  // Round values and remove near-zero entries, then fix primary currency to match total
+  // Round values and remove near-zero entries
   for (const userId of memberIds) {
     const currencies = breakdown[userId]
-
-    // Round non-primary currencies first
-    let nonPrimaryConvertedSum = 0
     for (const cur of Object.keys(currencies)) {
       const entry = currencies[cur]
       const threshold = isZeroDecimalCurrency(cur) ? 1 : 0.01
@@ -198,25 +194,10 @@ export function calculateCurrencyBreakdown(
       } else {
         entry.amount = Math.round(entry.amount * 100) / 100
       }
-      entry.convertedAmount = Math.round(entry.convertedAmount)
-      if (cur !== primaryCurrency) {
-        nonPrimaryConvertedSum += entry.convertedAmount
-      }
-    }
-
-    // Fix primary currency: derive from total balance so it always adds up
-    const total = balances[userId] || 0
-    const primaryConverted = Math.round(total - nonPrimaryConvertedSum)
-    if (currencies[primaryCurrency]) {
-      currencies[primaryCurrency].convertedAmount = primaryConverted
-      // For primary currency, amount === convertedAmount
-      currencies[primaryCurrency].amount = primaryConverted
-    }
-    // Remove primary if near-zero after adjustment
-    if (currencies[primaryCurrency]) {
-      const threshold = isZeroDecimalCurrency(primaryCurrency) ? 1 : 0.01
-      if (Math.abs(currencies[primaryCurrency].amount) < threshold) {
-        delete currencies[primaryCurrency]
+      if (isZeroDecimalCurrency(primaryCurrency)) {
+        entry.convertedAmount = Math.round(entry.convertedAmount)
+      } else {
+        entry.convertedAmount = Math.round(entry.convertedAmount * 100) / 100
       }
     }
   }

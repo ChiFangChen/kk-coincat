@@ -44,8 +44,7 @@ export function TripMyExpenses({ trip, members }: Props) {
 
   const myBreakdown = useMemo(() => {
     if (!currentUser) return null
-    const balances = calculateBalances(expenses, trip.members, trip.primaryCurrency)
-    const bd = calculateCurrencyBreakdown(expenses, trip.members, trip.primaryCurrency, balances)[currentUser.id] || {}
+    const bd = calculateCurrencyBreakdown(expenses, trip.members, trip.primaryCurrency)[currentUser.id] || {}
     const currencies = Object.keys(bd)
     const hasNonPrimary = currencies.some(c => c !== trip.primaryCurrency)
     if (!hasNonPrimary || currencies.length === 0) return null
