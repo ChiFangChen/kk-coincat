@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext'
 import type { Trip, TripExpense, SplitMethod, SplitDetail, User } from '../types'
 import { loadExpensePrefs, saveExpensePrefs } from '../utils/storage'
 import { isoToLocalDatetime, localDatetimeToISO } from '../utils/date'
+import { isZeroDecimalCurrency } from '../utils/settlement'
 
 interface Props {
   trip: Trip
@@ -69,8 +70,10 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
   const [submitAttempted, setSubmitAttempted] = useState(false)
 
   const updateSplitValue = (userId: string, value: number) => {
+    const isZeroDecimal = splitMethod === 'amount' && isZeroDecimalCurrency(currency)
+    const shouldRound = splitMethod === 'ratio' || isZeroDecimal
     setSplitDetails((prev) =>
-      prev.map((d) => (d.userId === userId ? { ...d, value: Math.round(value) } : d))
+      prev.map((d) => (d.userId === userId ? { ...d, value: shouldRound ? Math.round(value) : value } : d))
     )
   }
 
@@ -79,7 +82,8 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
     const othersSum = activeSplits
       .filter((d) => d.userId !== userId)
       .reduce((s, d) => s + d.value, 0)
-    const target = splitMethod === 'ratio' ? 100 : Math.round(parseFloat(amount) || 0)
+    const numAmount = parseFloat(amount) || 0
+    const target = splitMethod === 'ratio' ? 100 : (isZeroDecimalCurrency(currency) ? Math.round(numAmount) : numAmount)
     const remaining = target - othersSum
     updateSplitValue(userId, remaining > 0 ? remaining : 0)
   }
@@ -190,7 +194,7 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
               <label>金額</label>
               <input
                 type="number"
-                inputMode="numeric"
+                inputMode="decimal"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
 
@@ -319,16 +323,6 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
           <div className="dialog-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>取消</button>
             <button type="submit" className="btn btn-primary">
-              {editingExpense ? '更新' : '新增'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>,
-    document.body
-  )
-}
-e="btn btn-primary">
               {editingExpense ? '更新' : '新增'}
             </button>
           </div>
