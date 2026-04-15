@@ -37,7 +37,7 @@ export function TripDetail({ tripId, onBack }: Props) {
     if (userId && !trip.members.includes(userId)) {
       onBack(`未加入「${trip.name}」！`)
     }
-  }, [trip, state.auth.currentUser, adminSession])
+  }, [trip, state.auth.currentUser, adminSession, onBack])
 
   if (!trip) {
     return (

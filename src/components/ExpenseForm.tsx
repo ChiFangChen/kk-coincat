@@ -272,14 +272,14 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
                         <div className="split-detail-input-wrap">
                           <input
                             type="number"
-                            inputMode="numeric"
+                            inputMode="decimal"
                             value={detail.value || ''}
                             onChange={(e) =>
-                              updateSplitValue(detail.userId, parseInt(e.target.value) || 0)
+                              updateSplitValue(detail.userId, parseFloat(e.target.value) || 0)
                             }
                             onBlur={() => setShowSplitError(true)}
                             onFocus={() => setShowSplitError(false)}
-                            step="1"
+                            step={splitMethod === 'amount' && !isZeroDecimalCurrency(currency) ? 'any' : '1'}
                             min="0"
                             className="split-detail-input"
                           />
@@ -319,6 +319,16 @@ export function ExpenseForm({ trip, members, defaultPayer, editingExpense, onClo
           <div className="dialog-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>取消</button>
             <button type="submit" className="btn btn-primary">
+              {editingExpense ? '更新' : '新增'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body
+  )
+}
+e="btn btn-primary">
               {editingExpense ? '更新' : '新增'}
             </button>
           </div>

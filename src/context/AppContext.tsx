@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useReducer, useCallback, useRef, useState } from 'react'
 import type { AppState, User, Trip, TripExpense, LocalSettings } from '../types'
 import { USER_COLORS } from '../types'
@@ -220,7 +221,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'ADD_USER', user })
     if (dbRef.current) await syncUser(dbRef.current, user)
     return user
-  }, [])
+  }, [state.users])
 
   const updateUser = useCallback((user: User) => {
     dispatch({ type: 'UPDATE_USER', user })
