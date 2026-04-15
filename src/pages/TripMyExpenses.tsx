@@ -5,6 +5,7 @@ import {
   calculateBalances,
   calculateCurrencyBreakdown,
   calculateShares,
+  settledThreshold,
 } from "../utils/settlement";
 import { formatDate } from "../utils/date";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -19,6 +20,7 @@ export function TripMyExpenses({ trip, members }: Props) {
   const { state, getTripExpenses, getUserName } = useApp();
   const currentUser = state.auth.currentUser;
   const expenses = getTripExpenses(trip.id);
+  const threshold = settledThreshold(trip.primaryCurrency);
 
   const myItems = useMemo(() => {
     if (!currentUser) return [];
@@ -59,6 +61,7 @@ export function TripMyExpenses({ trip, members }: Props) {
 
   const myBreakdown = useMemo(() => {
     if (!currentUser) return null;
+    if (Math.abs(total) < threshold) return null;
     const bd =
       calculateCurrencyBreakdown(expenses, trip.members, trip.primaryCurrency)[
         currentUser.id
@@ -80,7 +83,14 @@ export function TripMyExpenses({ trip, members }: Props) {
         return `${sign}${entry.amount.toLocaleString()}${cur}`;
       })
       .join(" / ");
-  }, [expenses, trip.members, trip.primaryCurrency, currentUser]);
+  }, [
+    expenses,
+    trip.members,
+    trip.primaryCurrency,
+    currentUser,
+    threshold,
+    total,
+  ]);
 
   const fmt = (iso: string) => formatDate(iso, trip.timezone);
 
