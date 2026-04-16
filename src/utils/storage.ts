@@ -6,8 +6,18 @@ const AUTH_KEY = 'kk-coincat-auth'
 const SETTINGS_KEY = 'kk-coincat-settings'
 const EXPENSE_PREFS_PREFIX = 'kk-coincat-expense-prefs-'
 
+function getInitialTheme(): LocalSettings['theme'] {
+  if (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  ) {
+    return 'dark'
+  }
+  return 'light'
+}
+
 export const defaultSettings: LocalSettings = {
-  theme: 'light',
+  theme: getInitialTheme(),
 }
 
 export const defaultState: AppState = {
